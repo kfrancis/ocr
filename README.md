@@ -7,6 +7,10 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 
 `Plugin.Xamarin.OCR` and `Plugin.Maui.OCR` provides the ability to do simple text from image OCR using nothing but platform APIs.
 
+## Should you use this yet?
+
+**NO**. This is a work in progress and is not ready for production use. It is not feature complete and is not yet stable.
+
 ## Why
 
 Why am I making this? I'm making this because I want to make it easier for developers to do OCR in their apps. I want to make it so that you can just use this plugin and not have to worry about the platform specifics.
