@@ -17,19 +17,19 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 
 		<!-- NuGet -->
-		<Authors>author</Authors>
-		<Copyright>Copyright © author and contributors</Copyright>
+		<Authors>kfrancis</Authors>
+		<Copyright>Copyright © Kori Francis</Copyright>
 		<IsPackable>True</IsPackable>
-		<PackageProjectUrl>https://github.com/jfversluis/Plugin.Maui.Feature</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/jfversluis/Plugin.Maui.Feature</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/kfrancis/ocr</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/kfrancis/ocr</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>dotnet-maui;maui;plugin;</PackageTags>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Title>.NET MAUI Feature Plugin</Title>
-		<Description>Plugin.Maui.Feature provides the ability to do this amazing thing in your .NET MAUI application.</Description>
+		<Title>.NET MAUI OCR Plugin</Title>
+		<Description>Plugin.Maui.OCR provides the ability to perform OCR on an image using platform API.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<DebugType>portable</DebugType>
@@ -75,10 +75,29 @@
 		<PackageReference Include="System.Management" Version="7.0.0" Condition="$(TargetFramework.Contains('-windows')) == true" />
 	</ItemGroup>
 
+	<ItemGroup Condition="( '$(TargetFramework)' == 'net8.0-android' )">
+		<PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.0.1">
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.3.0.1">
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.0.1">
+		</PackageReference>
+		<PackageReference Include="Xamarin.Google.MLKit.BarcodeScanning" Version="117.2.0.2">
+		</PackageReference>
+		<PackageReference Include="Xamarin.GooglePlayServices.MLKit.Text.Recognition" Version="119.0.0.4">
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+	</ItemGroup>
+
 	<!-- Package additions -->
 	<ItemGroup>
 		<None Include="..\..\nuget.png" PackagePath="icon.png" Pack="true" />
-		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Plugin.Shared.OCR\Plugin.Shared.OCR.csproj" />
 	</ItemGroup>
 
 </Project>

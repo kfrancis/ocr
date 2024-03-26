@@ -1,15 +1,15 @@
-﻿using Plugin.Maui.Feature;
+using Plugin.Shared.OCR;
 
 namespace Plugin.Maui.Feature.Sample;
 
 public partial class MainPage : ContentPage
 {
-	readonly IFeature feature;
+    readonly IOcrService _feature;
 
-	public MainPage(IFeature feature)
-	{
-		InitializeComponent();
-		
-		this.feature = feature;
-	}
+    public MainPage(IOcrService feature)
+    {
+        InitializeComponent();
+
+        _feature = feature;
+    }
 }

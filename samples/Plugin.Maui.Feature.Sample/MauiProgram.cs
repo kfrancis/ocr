@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Plugin.Maui.Feature;
+using Plugin.Maui.OCR;
+using Plugin.Shared.OCR;
 
 namespace Plugin.Maui.Feature.Sample;
 
@@ -17,7 +18,6 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddTransient<MainPage>();
-		builder.Services.AddSingleton<IFeature>(Feature.Default);
 
 		return builder.Build();
 	}
