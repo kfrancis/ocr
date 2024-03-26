@@ -7,6 +7,13 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 
 `Plugin.Xamarin.OCR` and `Plugin.Maui.OCR` provides the ability to do simple text from image OCR using nothing but platform APIs.
 
+## Why
+
+Why am I making this? I'm making this because I want to make it easier for developers to do OCR in their apps. I want to make it so that you can just use this plugin and not have to worry about the platform specifics.
+
+To many times I've tried to do OCR and had to wrestle with external dependencies like Tesseract (with it's dependencies Leptonica, etc) and these types
+of native dependencies can be a real pain to work with. 
+
 ## Install Plugin
 
 [![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.OCR.svg?label=NuGet)](https://www.nuget.org/packages/Plugin.Maui.OCR/)
