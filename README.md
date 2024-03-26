@@ -3,17 +3,17 @@ Everything in here is of course optional. If you want to add/remove something, a
 This example README has some dummy APIs you'll need to replace and only acts as a placeholder for some inspiration that you can fill in with your own functionalities.
 -->
 ![](nuget.png)
-# Plugin.Maui.Feature
+# Plugin.Xamarin.OCR | Plugin.Maui.OCR
 
-`Plugin.Maui.Feature` provides the ability to do this amazing thing in your .NET MAUI application.
+`Plugin.Xamarin.OCR` and `Plugin.Maui.OCR` provides the ability to do simple text from image OCR using nothing but platform APIs.
 
 ## Install Plugin
 
-[![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.Feature.svg?label=NuGet)](https://www.nuget.org/packages/Plugin.Maui.Feature/)
+[![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.OCR.svg?label=NuGet)](https://www.nuget.org/packages/Plugin.Maui.OCR/)
 
-Available on [NuGet](http://www.nuget.org/packages/Plugin.Maui.Feature).
+Available on NuGet for [MAUI](http://www.nuget.org/packages/Plugin.Maui.OCR) and [Xamarin](http://www.nuget.org/packages/Plugin.Xamarin.OCR).
 
-Install with the dotnet CLI: `dotnet add package Plugin.Maui.Feature`, or through the NuGet Package Manager in Visual Studio.
+Install with the dotnet CLI: `dotnet add package Plugin.Maui.OCR` or `dotnet add package Plugin.Xamarin.OCR`, or through the NuGet Package Manager in Visual Studio.
 
 ### Supported Platforms
 
@@ -26,9 +26,59 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.Feature`, or throug
 
 ## API Usage
 
-`Plugin.Maui.Feature` provides the `Feature` class that has a single property `Property` that you can get or set.
+For MAUI, to initialize make sure you use `AddOcr()` like so:
 
-You can either use it as a static class, e.g.: `Feature.Default.Property = 1` or with dependency injection: `builder.Services.AddSingleton<IFeature>(Feature.Default);`
+```csharp
+public static class MauiProgram
+{
+	public static MauiApp CreateMauiApp()
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder
+			.UseMauiApp<App>()
+			.ConfigureFonts(fonts =>
+			{
+				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+			}).
+			AddOcr();  // <-- add this line
+
+		return builder.Build();
+	}
+}
+```
+
+And then you can just inject `IOcrService` into your classes and use it like so:
+
+```csharp
+
+```
+
+The `IOcrService` interface exposes the following methods:
+
+```csharp
+public interface IOcrService
+{
+    Task InitAsync(CancellationToken ct = default);
+    Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default);
+}
+
+public class OcrResult
+{
+    public bool Success { get; set; }
+
+    public string AllText { get; set; }
+
+    public IList<OcrElement> Elements { get; set; } = new List<OcrElement>();
+    public IList<string> Lines { get; set; } = new List<string>();
+
+    public class OcrElement
+    {
+        public string Text { get; set; }
+        public float Confidence { get; set; }
+    }
+}
+```
 
 ### Permissions
 
