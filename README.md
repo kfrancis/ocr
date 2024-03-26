@@ -94,22 +94,22 @@ No permissions are needed for Android.
 
 ### Dependency Injection
 
-You will first need to register the `Feature` with the `MauiAppBuilder` following the same pattern that the .NET MAUI Essentials libraries follow.
+You will first need to register the `OCR` with the `MauiAppBuilder` following the same pattern that the .NET MAUI Essentials libraries follow.
 
 ```csharp
-builder.Services.AddSingleton(Feature.Default);
+builder.Services.AddSingleton(OCR.Default);
 ```
 
 You can then enable your classes to depend on `IFeature` as per the following example.
 
 ```csharp
-public class FeatureViewModel
+public class OcrViewModel
 {
-    readonly IFeature feature;
+    readonly IOcrService ocr;
 
-    public FeatureViewModel(IFeature feature)
+    public FeatureViewModel(IOcrService ocr)
     {
-        this.feature = feature;
+        this.ocr = ocr;
     }
 
     public void StartFeature()
@@ -138,7 +138,7 @@ public class FeatureViewModel
             Console.WriteLine(feature.Thing);
         };
 
-        Feature.Default.Start();
+        OCR.Default.Start();
     }
 }
 ```
@@ -149,29 +149,21 @@ Once you have created a `Feature` you can interact with it in the following ways
 
 #### Events
 
-##### `ReadingChanged`
 
-Occurs when feature reading changes.
 
 #### Properties
 
-##### `IsSupported`
 
-Gets a value indicating whether reading the feature is supported on this device.
-
-##### `IsMonitoring`
-
-Gets a value indicating whether the feature is actively being monitored.
 
 #### Methods
 
-##### `Start()`
+##### `InitAsync()`
 
-Start monitoring for changes to the feature.
+Initialize the feature.
 
-##### `Stop()`
+##### `RecognizeTextAsync(byte[] imageData)`
 
-Stop monitoring for changes to the feature.
+Recognize text from an image.
 
 # Acknowledgements
 

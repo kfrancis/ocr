@@ -1,4 +1,4 @@
-﻿using Foundation;
+using Foundation;
 using Plugin.Shared.OCR;
 using UIKit;
 using Vision;
@@ -7,12 +7,13 @@ namespace Plugin.Maui.OCR;
 
 partial class OcrImplementation : IOcrService
 {
-    private static readonly object _initLock = new();
-    private bool _isInitialized = false;
+    private static readonly object s_initLock = new();
+    private bool _isInitialized;
 
+    /// <inheritdoc/>
     public Task InitAsync(CancellationToken ct = default)
     {
-        lock (_initLock)
+        lock (s_initLock)
         {
             if (_isInitialized) return Task.CompletedTask;
             _isInitialized = true;
@@ -24,6 +25,7 @@ partial class OcrImplementation : IOcrService
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
     {
         if (!_isInitialized)
@@ -31,10 +33,7 @@ partial class OcrImplementation : IOcrService
             throw new InvalidOperationException("Init must be called before RecognizeTextAsync.");
         }
 
-        if (ct.IsCancellationRequested)
-        {
-            throw new OperationCanceledException(ct);
-        }
+        ct.ThrowIfCancellationRequested();
 
         var tcs = new TaskCompletionSource<OcrResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         ct.Register(() => tcs.TrySetCanceled());
@@ -62,7 +61,7 @@ partial class OcrImplementation : IOcrService
             });
 
             var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
-            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out NSError performError);
+            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var performError);
 
             if (performError != null)
             {
@@ -97,10 +96,7 @@ partial class OcrImplementation : IOcrService
                 ocrResult.Lines.Add(topCandidate.String);
 
                 // Splitting by spaces to create elements might not be accurate for all languages/scripts
-                topCandidate.String.Split(" ").ToList().ForEach(e =>
-                {
-                    ocrResult.Elements.Add(new OcrResult.OcrElement { Text = e, Confidence = topCandidate.Confidence });
-                });
+                topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement { Text = e, Confidence = topCandidate.Confidence }));
             }
         }
 

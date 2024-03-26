@@ -1,4 +1,4 @@
-﻿using Android.Gms.Tasks;
+using Android.Gms.Tasks;
 using Android.Graphics;
 using Android.Util;
 using Plugin.Shared.OCR;
@@ -25,9 +25,11 @@ internal partial class OcrImplementation : IOcrService
                 ocrResult.Lines.Add(line.Text);
                 foreach (var element in line.Elements)
                 {
-                    var ocrElement = new OcrElement();
-                    ocrElement.Text = element.Text;
-                    ocrElement.Confidence = element.Confidence;
+                    var ocrElement = new OcrElement
+                    {
+                        Text = element.Text,
+                        Confidence = element.Confidence
+                    };
                     ocrResult.Elements.Add(ocrElement);
                 }
             }
@@ -36,6 +38,7 @@ internal partial class OcrImplementation : IOcrService
         return ocrResult;
     }
 
+    /// <inheritdoc/>
     public Task InitAsync(System.Threading.CancellationToken ct = default)
     {
         // Initialization might not be required for ML Kit's on-device text recognition,
@@ -43,6 +46,7 @@ internal partial class OcrImplementation : IOcrService
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, System.Threading.CancellationToken ct = default)
     {
         var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
@@ -52,7 +56,7 @@ internal partial class OcrImplementation : IOcrService
         return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
     }
 
-    private Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
     {
         var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
         var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
@@ -76,14 +80,9 @@ internal partial class OcrImplementation : IOcrService
         }
     }
 
-    internal class TaskCompleteListener : Java.Lang.Object, IOnCompleteListener
+    internal class TaskCompleteListener(TaskCompletionSource<Java.Lang.Object> tcs) : Java.Lang.Object, IOnCompleteListener
     {
-        private readonly TaskCompletionSource<Java.Lang.Object> _taskCompletionSource;
-
-        public TaskCompleteListener(TaskCompletionSource<Java.Lang.Object> tcs)
-        {
-            _taskCompletionSource = tcs;
-        }
+        private readonly TaskCompletionSource<Java.Lang.Object> _taskCompletionSource = tcs;
 
         public void OnComplete(global::Android.Gms.Tasks.Task task)
         {

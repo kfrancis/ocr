@@ -1,29 +1,60 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Plugin.Shared.OCR
+namespace Plugin.Shared.OCR;
+
+public interface IOcrService
 {
-    public interface IOcrService
+    Task InitAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Takes an image and returns the text found in the image.
+    /// </summary>
+    /// <param name="imageData">The image data</param>
+    /// <param name="ct">An optional cancellation token</param>
+    /// <returns>The OCR result</returns>
+    Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default);
+}
+
+/// <summary>
+/// The result of an OCR operation.
+/// </summary>
+public class OcrResult
+{
+    /// <summary>
+    /// The full text of the OCR result.
+    /// </summary>
+    public string AllText { get; set; }
+
+    /// <summary>
+    /// The individual elements of the OCR result.
+    /// </summary>
+    public IList<OcrElement> Elements { get; set; } = new List<OcrElement>();
+
+    /// <summary>
+    /// The lines of the OCR result.
+    /// </summary>
+    public IList<string> Lines { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Was the OCR successful?
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// The words of the OCR result.
+    /// </summary>
+    public class OcrElement
     {
-        Task InitAsync(CancellationToken ct = default);
-        Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default);
-    }
+        /// <summary>
+        /// The confidence of the OCR result.
+        /// </summary>
+        public float Confidence { get; set; }
 
-    public class OcrResult
-    {
-        public bool Success { get; set; }
-
-        public string AllText { get; set; }
-
-        public IList<OcrElement> Elements { get; set; } = new List<OcrElement>();
-        public IList<string> Lines { get; set; } = new List<string>();
-
-        public class OcrElement
-        {
-            public string Text { get; set; }
-            public float Confidence { get; set; }
-        }
+        /// <summary>
+        /// The text of the element.
+        /// </summary>
+        public string Text { get; set; }
     }
 }

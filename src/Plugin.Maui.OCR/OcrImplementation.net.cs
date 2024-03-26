@@ -1,9 +1,10 @@
-﻿using Plugin.Shared.OCR;
+using Plugin.Shared.OCR;
 
 namespace Plugin.Maui.OCR;
 
 partial class OcrImplementation : IOcrService
 {
+    /// <inheritdoc/>
     public Task InitAsync(CancellationToken ct = default)
     {
         throw new NotImplementedException();
@@ -11,6 +12,8 @@ partial class OcrImplementation : IOcrService
 
     // TODO Implement your .NET specific code.
     // This usually is a placeholder as .NET MAUI apps typically don't run on .NET generic targets unless through unit tests and such
+
+    /// <inheritdoc/>
     public Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
     {
         throw new NotImplementedException();

@@ -2,16 +2,16 @@ using Plugin.Shared.OCR;
 
 namespace Plugin.Maui.OCR;
 
-public static class Feature
+public static class OCR
 {
-    static IOcrService? defaultImplementation;
+    static IOcrService? s_defaultImplementation;
 
     /// <summary>
     /// Provides the default implementation for static usage of this API.
     /// </summary>
     public static IOcrService Default =>
-        defaultImplementation ??= new OcrImplementation();
+        s_defaultImplementation ??= new OcrImplementation();
 
     internal static void SetDefault(IOcrService? implementation) =>
-        defaultImplementation = implementation;
+        s_defaultImplementation = implementation;
 }
