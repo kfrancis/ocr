@@ -1,16 +1,15 @@
-﻿using Plugin.Shared.OCR;
+using Plugin.Shared.OCR;
 
-namespace Plugin.Maui.OCR
+namespace Plugin.Maui.OCR;
+
+public static class OcrServiceExtensions
 {
-    public static class OcrServiceExtensions
+    public static MauiAppBuilder UseOcr(this MauiAppBuilder builder)
     {
-        public static MauiAppBuilder UseOcr(this MauiAppBuilder builder)
-        {
-            // Register the IOcrService implementation with the DI container.
-            // This ensures that whenever IOcrService is injected, the specific platform implementation is provided.
-            builder.Services.AddSingleton<IOcrService, OcrImplementation>();
+        // Register the IOcrService implementation with the DI container.
+        // This ensures that whenever IOcrService is injected, the specific platform implementation is provided.
+        builder.Services.AddSingleton<IOcrService, OcrImplementation>();
 
-            return builder;
-        }
+        return builder;
     }
 }
