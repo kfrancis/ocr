@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugin.Shared.OCR", "Plugin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Xamarin.OCR.iOS", "Plugin.Xamarin.OCR.iOS\Plugin.Xamarin.OCR.iOS.csproj", "{DB3F6043-D151-4D28-806B-9B6A78552E6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Xamarin.OCR", "Plugin.Xamarin.OCR\Plugin.Xamarin.OCR.csproj", "{0486AFA0-8165-4572-820F-D93281B99E40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{DB3F6043-D151-4D28-806B-9B6A78552E6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB3F6043-D151-4D28-806B-9B6A78552E6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB3F6043-D151-4D28-806B-9B6A78552E6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0486AFA0-8165-4572-820F-D93281B99E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0486AFA0-8165-4572-820F-D93281B99E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0486AFA0-8165-4572-820F-D93281B99E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0486AFA0-8165-4572-820F-D93281B99E40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
