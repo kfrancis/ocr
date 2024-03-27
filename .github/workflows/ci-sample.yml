@@ -16,4 +16,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: dotnet build samples\Plugin.Maui.Feature.Sample.sln -c Release
+      run: dotnet build samples\Plugin.Maui.OCR.Sample.sln -c Release
