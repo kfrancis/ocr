@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using Android.Gms.Tasks;
 using Android.Graphics;
 using Android.Util;
 using Plugin.Shared.OCR;
+using Xamarin.Google.MLKit.Common;
 using Xamarin.Google.MLKit.Vision.Common;
 using Xamarin.Google.MLKit.Vision.Text;
 using Xamarin.Google.MLKit.Vision.Text.Latin;
@@ -43,6 +45,8 @@ internal partial class OcrImplementation : IOcrService
     {
         // Initialization might not be required for ML Kit's on-device text recognition,
         // but you can perform any necessary setup here.
+
+
         return Task.CompletedTask;
     }
 
@@ -53,7 +57,36 @@ internal partial class OcrImplementation : IOcrService
         using var inputImage = InputImage.FromBitmap(image, 0);
 
         using var textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
-        return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+
+        MlKitException? lastException = null;
+        var maxRetries = 5;
+
+        for (var retry = 0; retry < maxRetries; retry++)
+        {
+            try
+            {
+                // Try to perform the OCR operation
+                return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+            }
+            catch (MlKitException ex) when (ex.Message.Contains("Waiting for the text optional module to be downloaded"))
+            {
+                // If the specific exception is caught, log it and wait before retrying
+                lastException = ex;
+                Debug.WriteLine($"OCR model is not ready. Waiting before retrying... Attempt {retry + 1}/{maxRetries}");
+                await Task.Delay(5000);
+            }
+        }
+
+        // If all retries have failed, throw the last exception
+        if (lastException != null)
+        {
+            throw lastException;
+        }
+        else
+        {
+            throw new InvalidOperationException("OCR operation failed without an exception.");
+        }
+
     }
 
     private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)

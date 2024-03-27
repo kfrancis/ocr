@@ -4,31 +4,78 @@ namespace Plugin.Maui.Feature.Sample;
 
 public partial class MainPage : ContentPage
 {
-    readonly IOcrService _feature;
+    readonly IOcrService _ocr;
 
     public MainPage(IOcrService feature)
     {
         InitializeComponent();
 
-        _feature = feature;
+        _ocr = feature;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
 
-        await _feature.InitAsync();
+        await _ocr.InitAsync();
     }
 
-    private async void RunOcrBtn_Clicked(object sender, EventArgs e)
+    private async void OpenFromCameraBtn_Clicked(object sender, EventArgs e)
     {
-        // load test.jpg and then run OCR on it
-        using var fileStream = await FileSystem.Current.OpenAppPackageFileAsync("test.jpg");
+        if (MediaPicker.Default.IsCaptureSupported)
+        {
+            var photo = await MediaPicker.Default.CapturePhotoAsync();
 
-        // read all bytes of the image from fileStream
-        var imageData = new byte[fileStream.Length];
-        await fileStream.ReadAsync(imageData, 0, imageData.Length);
+            if (photo != null)
+            {
+                // Open a stream to the photo
+                using var sourceStream = await photo.OpenReadAsync();
 
-        var result = await _feature.RecognizeTextAsync(imageData);
+                // Create a byte array to hold the image data
+                var imageData = new byte[sourceStream.Length];
+
+                // Read the stream into the byte array
+                await sourceStream.ReadAsync(imageData);
+
+                var result = await _ocr.RecognizeTextAsync(imageData);
+
+                ResultLbl.Text = result.AllText;
+
+                ClearBtn.IsEnabled = true;
+            }
+        }
+        else
+        {
+            await DisplayAlert(title: "Sorry", message: "Image capture is not supported on this device.", cancel: "OK");
+        }
+    }
+
+    private async void OpenFromFileBtn_Clicked(object sender, EventArgs e)
+    {
+        var photo = await MediaPicker.Default.PickPhotoAsync();
+
+        if (photo != null)
+        {
+            // Open a stream to the photo
+            using var sourceStream = await photo.OpenReadAsync();
+
+            // Create a byte array to hold the image data
+            var imageData = new byte[sourceStream.Length];
+
+            // Read the stream into the byte array
+            await sourceStream.ReadAsync(imageData);
+
+            var result = await _ocr.RecognizeTextAsync(imageData);
+
+            ResultLbl.Text = result.AllText;
+
+            ClearBtn.IsEnabled = true;
+        }
+    }
+
+    private void ClearBtn_Clicked(object sender, EventArgs e)
+    {
+        ResultLbl.Text = string.Empty;
+        ClearBtn.IsEnabled = false;
     }
 }

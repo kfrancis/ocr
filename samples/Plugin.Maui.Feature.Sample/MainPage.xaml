@@ -3,16 +3,27 @@
     x:Class="Plugin.Maui.Feature.Sample.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Feature Plugin">
-
-    <!--  Add something that makes sense for your plugin here  -->
-    <Grid Padding="20">
-        <Label Text="Hello" />
+    Title="OCR Plugin">
+    <StackLayout Padding="20" Spacing="10">
         <Button
-            x:Name="RunOcrBtn"
-            Clicked="RunOcrBtn_Clicked"
+            x:Name="OpenFromCameraBtn"
             MaximumHeightRequest="100"
             MaximumWidthRequest="200"
-            Text="Run" />
-    </Grid>
+            Clicked="OpenFromCameraBtn_Clicked"
+            Text="From Camera .." />
+        <Button
+            x:Name="OpenFromFileBtn"
+            MaximumHeightRequest="100"
+            MaximumWidthRequest="200"
+            Clicked="OpenFromFileBtn_Clicked"
+            Text="From File .." />
+        <Label x:Name="ResultLbl" Text="Waiting for results .." HorizontalOptions="Center" />
+        <Button
+            IsEnabled="False"
+            x:Name="ClearBtn"
+            Clicked="ClearBtn_Clicked"
+            MaximumHeightRequest="100"
+            MaximumWidthRequest="200"
+            Text="Clear Result" />
+    </StackLayout>
 </ContentPage>
