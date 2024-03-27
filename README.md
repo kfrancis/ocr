@@ -18,6 +18,8 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 | Xamarin  | WIP | WIP | WIP | WIP |
 | MAUI     | Yes | Yes | Yes | Yes |
 
+[![Build for CI](https://github.com/kfrancis/ocr/actions/workflows/ci.yml/badge.svg)](https://github.com/kfrancis/ocr/actions/workflows/ci.yml)
+
 ## Why
 
 Why am I making this? I'm making this because I want to make it easier for developers to do OCR in their apps. I want to make it so that you can just use this plugin and not have to worry about the platform specifics.
