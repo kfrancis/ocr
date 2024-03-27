@@ -25,6 +25,10 @@ Why am I making this? I'm making this because I want to make it easier for devel
 To many times I've tried to do OCR and had to wrestle with external dependencies like Tesseract (with it's dependencies Leptonica, etc) and these types
 of native dependencies can be a real pain to work with. 
 
+### Xamarin??
+
+Well, I still have to maintain a Xamarin app that has used Tesseract and I'm tired of all the problems that come with it. I want to make it easier for myself and others to do OCR in their apps.
+
 ## Install Plugin
 
 [![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.OCR.svg?label=NuGet)](https://www.nuget.org/packages/Plugin.Maui.OCR/)
@@ -42,9 +46,9 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.OCR` or `dotnet add
 | Android  | 5.0 (API 21)              |
 | Windows  | 11 and 10 version 1809+   |
 
-## API Usage
+## MAUI Setup and Usage
 
-For MAUI, to initialize make sure you use `AddOcr()` like so:
+For MAUI, to initialize make sure you use the MauiAppBuilder extension `AddOcr()` like so:
 
 ```csharp
 public static class MauiProgram
@@ -89,6 +93,12 @@ private async Task<OcrResult> ProcessPhoto(FileResult photo)
     return await _ocr.RecognizeTextAsync(imageData);
 }
 ```
+
+## Xamarin Setup and Usage
+
+WIP
+
+## Details
 
 The `IOcrService` interface exposes the following methods:
 
