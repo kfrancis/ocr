@@ -30,7 +30,7 @@ partial class OcrImplementation : IOcrService
     {
         if (!_isInitialized)
         {
-            throw new InvalidOperationException("Init must be called before RecognizeTextAsync.");
+            throw new InvalidOperationException($"{nameof(InitAsync)} must be called before {nameof(RecognizeTextAsync)}.");
         }
 
         ct.ThrowIfCancellationRequested();

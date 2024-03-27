@@ -11,6 +11,13 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 
 **NO**. This is a work in progress and is not ready for production use. It is not feature complete and is not yet stable.
 
+## What Works Matrix
+
+| Platform | iOS | Android | Windows | macOS |
+|----------|-----|---------|---------|-------|
+| Xamarin  | WIP | WIP | WIP | WIP |
+| MAUI     | Yes | Yes | Yes | Yes |
+
 ## Why
 
 Why am I making this? I'm making this because I want to make it easier for developers to do OCR in their apps. I want to make it so that you can just use this plugin and not have to worry about the platform specifics.
