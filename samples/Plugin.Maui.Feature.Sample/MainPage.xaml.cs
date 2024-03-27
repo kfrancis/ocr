@@ -34,16 +34,7 @@ public partial class MainPage : ContentPage
 
             if (photo != null)
             {
-                // Open a stream to the photo
-                using var sourceStream = await photo.OpenReadAsync();
-
-                // Create a byte array to hold the image data
-                var imageData = new byte[sourceStream.Length];
-
-                // Read the stream into the byte array
-                await sourceStream.ReadAsync(imageData);
-
-                var result = await _ocr.RecognizeTextAsync(imageData);
+                var result = await ProcessPhoto(photo);
 
                 ResultLbl.Text = result.AllText;
 
@@ -62,20 +53,31 @@ public partial class MainPage : ContentPage
 
         if (photo != null)
         {
-            // Open a stream to the photo
-            using var sourceStream = await photo.OpenReadAsync();
-
-            // Create a byte array to hold the image data
-            var imageData = new byte[sourceStream.Length];
-
-            // Read the stream into the byte array
-            await sourceStream.ReadAsync(imageData);
-
-            var result = await _ocr.RecognizeTextAsync(imageData);
+            var result = await ProcessPhoto(photo);
 
             ResultLbl.Text = result.AllText;
 
             ClearBtn.IsEnabled = true;
         }
+    }
+
+    /// <summary>
+    /// Takes a photo and processes it using the OCR service.
+    /// </summary>
+    /// <param name="photo">The photo to process.</param>
+    /// <returns>The OCR result.</returns>
+    private async Task<OcrResult> ProcessPhoto(FileResult photo)
+    {
+        // Open a stream to the photo
+        using var sourceStream = await photo.OpenReadAsync();
+
+        // Create a byte array to hold the image data
+        var imageData = new byte[sourceStream.Length];
+
+        // Read the stream into the byte array
+        await sourceStream.ReadAsync(imageData);
+
+        // Process the image data using the OCR service
+        return await _ocr.RecognizeTextAsync(imageData);
     }
 }

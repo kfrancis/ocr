@@ -69,7 +69,25 @@ public static class MauiProgram
 And then you can just inject `IOcrService` into your classes and use it like so:
 
 ```csharp
+/// <summary>
+/// Takes a photo and processes it using the OCR service.
+/// </summary>
+/// <param name="photo">The photo to process.</param>
+/// <returns>The OCR result.</returns>
+private async Task<OcrResult> ProcessPhoto(FileResult photo)
+{
+    // Open a stream to the photo
+    using var sourceStream = await photo.OpenReadAsync();
 
+    // Create a byte array to hold the image data
+    var imageData = new byte[sourceStream.Length];
+
+    // Read the stream into the byte array
+    await sourceStream.ReadAsync(imageData);
+
+    // Process the image data using the OCR service
+    return await _ocr.RecognizeTextAsync(imageData);
+}
 ```
 
 The `IOcrService` interface exposes the following methods:
@@ -104,11 +122,19 @@ Before you can start using Feature, you will need to request the proper permissi
 
 #### iOS
 
-No permissions are needed for iOS.
+If you're handling camera, you'll need the usual permissions for that.
 
 #### Android
 
-No permissions are needed for Android.
+If you're handling camera, you'll need the usual permissions for that. The only extra part you'll want in the AndroidManifest.xml is the following:
+
+```xml
+<application ..>
+  <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="ocr" />
+</application>
+```
+
+This will cause the model necessary to be installed when the application is installed.
 
 ### Dependency Injection
 
@@ -118,26 +144,23 @@ You will first need to register the `OCR` with the `MauiAppBuilder` following th
 builder.Services.AddSingleton(OCR.Default);
 ```
 
-You can then enable your classes to depend on `IFeature` as per the following example.
+You can then enable your classes to depend on `IOcrService` as per the following example.
 
 ```csharp
 public class OcrViewModel
 {
-    readonly IOcrService ocr;
+    readonly IOcrService _ocr;
 
-    public FeatureViewModel(IOcrService ocr)
+    public OcrViewModel(IOcrService ocr)
     {
-        this.ocr = ocr;
+        _ocr = ocr;
     }
 
-    public void StartFeature()
+    public void DoSomeOcr()
     {
-        feature.ReadingChanged += (sender, reading) =>
-        {
-            Console.WriteLine(reading.Thing);
-        };
+        byte[] imageData = GetImageData();
 
-        feature.Start();
+        var result = await _ocr.RecognizeTextAsync(imageData);
     }
 }
 ```
@@ -147,23 +170,20 @@ public class OcrViewModel
 Alternatively if you want to skip using the dependency injection approach you can use the `Feature.Default` property.
 
 ```csharp
-public class FeatureViewModel
+public class OcrViewModel
 {
-    public void StartFeature()
+    public void DoSomeOcr()
     {
-        feature.ReadingChanged += (sender, reading) =>
-        {
-            Console.WriteLine(feature.Thing);
-        };
+        byte[] imageData = GetImageData();
 
-        OCR.Default.Start();
+        var result = await OCR.Default.RecognizeTextAsync(imageData);
     }
 }
 ```
 
 ### Feature
 
-Once you have created a `Feature` you can interact with it in the following ways:
+Once you have the `OCR` instance, you can interact with it in the following ways:
 
 #### Events
 
@@ -177,7 +197,7 @@ Once you have created a `Feature` you can interact with it in the following ways
 
 ##### `InitAsync()`
 
-Initialize the feature.
+Initialize the feature. Might get removed, most platforms (if not all) don't currently require any addition initialization.
 
 ##### `RecognizeTextAsync(byte[] imageData)`
 
