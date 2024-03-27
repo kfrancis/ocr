@@ -2,6 +2,7 @@ using Plugin.Shared.OCR;
 
 namespace Plugin.Maui.OCR;
 
+// This usually is a placeholder as .NET MAUI apps typically don't run on .NET generic targets unless through unit tests and such
 partial class OcrImplementation : IOcrService
 {
     /// <inheritdoc/>
@@ -9,9 +10,6 @@ partial class OcrImplementation : IOcrService
     {
         throw new NotImplementedException();
     }
-
-    // TODO Implement your .NET specific code.
-    // This usually is a placeholder as .NET MAUI apps typically don't run on .NET generic targets unless through unit tests and such
 
     /// <inheritdoc/>
     public Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)

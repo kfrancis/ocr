@@ -17,7 +17,7 @@ internal partial class OcrImplementation : IOcrService
     public static OcrResult ProcessOcrResult(Java.Lang.Object result)
     {
         var ocrResult = new OcrResult();
-        var textResult = (Xamarin.Google.MLKit.Vision.Text.Text)result;
+        var textResult = (Text)result;
 
         ocrResult.AllText = textResult.GetText();
         foreach (var block in textResult.TextBlocks)
@@ -46,7 +46,6 @@ internal partial class OcrImplementation : IOcrService
         // Initialization might not be required for ML Kit's on-device text recognition,
         // but you can perform any necessary setup here.
 
-
         return Task.CompletedTask;
     }
 
@@ -59,21 +58,21 @@ internal partial class OcrImplementation : IOcrService
         using var textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
 
         MlKitException? lastException = null;
-        var maxRetries = 5;
+        const int MaxRetries = 5;
 
-        for (var retry = 0; retry < maxRetries; retry++)
+        for (var retry = 0; retry < MaxRetries; retry++)
         {
             try
             {
-                // Try to perform the OCR operation
+                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
                 return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
             }
-            catch (MlKitException ex) when (ex.Message.Contains("Waiting for the text optional module to be downloaded"))
+            catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
             {
                 // If the specific exception is caught, log it and wait before retrying
                 lastException = ex;
-                Debug.WriteLine($"OCR model is not ready. Waiting before retrying... Attempt {retry + 1}/{maxRetries}");
-                await Task.Delay(5000);
+                Debug.WriteLine($"OCR model is not ready. Waiting before retrying... Attempt {retry + 1}/{MaxRetries}");
+                await Task.Delay(5000, ct);
             }
         }
 
@@ -86,7 +85,6 @@ internal partial class OcrImplementation : IOcrService
         {
             throw new InvalidOperationException("OCR operation failed without an exception.");
         }
-
     }
 
     private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)

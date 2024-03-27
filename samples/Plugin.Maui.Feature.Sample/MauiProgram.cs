@@ -1,4 +1,3 @@
-using Plugin.Shared.OCR;
 using Plugin.Maui.OCR;
 
 namespace Plugin.Maui.Feature.Sample;
@@ -14,7 +13,8 @@ public static class MauiProgram
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-            }).UseOcr();
+            })
+            .UseOcr();
 
         builder.Services.AddTransient<MainPage>();
 

@@ -4,7 +4,7 @@ namespace Plugin.Maui.Feature.Sample;
 
 public partial class MainPage : ContentPage
 {
-    readonly IOcrService _ocr;
+    private readonly IOcrService _ocr;
 
     public MainPage(IOcrService feature)
     {
@@ -18,6 +18,12 @@ public partial class MainPage : ContentPage
         base.OnAppearing();
 
         await _ocr.InitAsync();
+    }
+
+    private void ClearBtn_Clicked(object sender, EventArgs e)
+    {
+        ResultLbl.Text = string.Empty;
+        ClearBtn.IsEnabled = false;
     }
 
     private async void OpenFromCameraBtn_Clicked(object sender, EventArgs e)
@@ -71,11 +77,5 @@ public partial class MainPage : ContentPage
 
             ClearBtn.IsEnabled = true;
         }
-    }
-
-    private void ClearBtn_Clicked(object sender, EventArgs e)
-    {
-        ResultLbl.Text = string.Empty;
-        ClearBtn.IsEnabled = false;
     }
 }
