@@ -24,7 +24,7 @@
     <PackageProjectUrl>https://github.com/kfrancis/ocr</PackageProjectUrl>
     <RepositoryUrl>https://github.com/kfrancis/ocr</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>dotnet-maui;maui;plugin;</PackageTags>
+    <PackageTags>dotnet-maui;maui;plugin</PackageTags>
     <IncludeSymbols>True</IncludeSymbols>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -103,7 +103,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" IsImplicitlyDefined="true" />
     <PackageReference Include="Roslynator.Analyzers" Version="4.12.0">
       <PrivateAssets>all</PrivateAssets>
@@ -141,7 +142,7 @@
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
     <ItemGroup>
       <!-- Filter out unnecessary files -->
-      <_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))" />
+      <_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))" />
     </ItemGroup>
 
     <!-- Print batches for debug purposes -->
