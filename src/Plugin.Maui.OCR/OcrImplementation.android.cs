@@ -40,7 +40,10 @@ internal partial class OcrImplementation : IOcrService
         return ocrResult;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initialize the OCR on the platform
+    /// </summary>
+    /// <param name="ct">An optional cancellation token</param>
     public Task InitAsync(System.Threading.CancellationToken ct = default)
     {
         // Initialization might not be required for ML Kit's on-device text recognition,
@@ -49,7 +52,12 @@ internal partial class OcrImplementation : IOcrService
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Takes an image and returns the text found in the image.
+    /// </summary>
+    /// <param name="imageData">The image data</param>
+    /// <param name="ct">An optional cancellation token</param>
+    /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, System.Threading.CancellationToken ct = default)
     {
         var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);

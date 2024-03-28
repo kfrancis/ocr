@@ -10,7 +10,10 @@ partial class OcrImplementation : IOcrService
     private static readonly object s_initLock = new();
     private bool _isInitialized;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initialize the OCR on the platform
+    /// </summary>
+    /// <param name="ct">An optional cancellation token</param>
     public Task InitAsync(CancellationToken ct = default)
     {
         lock (s_initLock)
@@ -25,7 +28,12 @@ partial class OcrImplementation : IOcrService
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Takes an image and returns the text found in the image.
+    /// </summary>
+    /// <param name="imageData">The image data</param>
+    /// <param name="ct">An optional cancellation token</param>
+    /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
     {
         if (!_isInitialized)

@@ -4,8 +4,15 @@ using System.Threading.Tasks;
 
 namespace Plugin.Shared.OCR;
 
+/// <summary>
+/// OCR API.
+/// </summary>
 public interface IOcrService
 {
+    /// <summary>
+    /// Initialize the OCR on the platform
+    /// </summary>
+    /// <param name="ct">An optional cancellation token</param>
     Task InitAsync(CancellationToken ct = default);
 
     /// <summary>
