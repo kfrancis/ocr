@@ -59,5 +59,25 @@ public class OcrResult
         /// The text of the element.
         /// </summary>
         public string Text { get; set; }
+
+        /// <summary>
+        /// The X coordinates of the element.
+        /// </summary>
+        public int X { get; set; }
+
+        /// <summary>
+        /// The Y coordinates of the element.
+        /// </summary>
+        public int Y { get; set; }
+
+        /// <summary>
+        /// The height of the element.
+        /// </summary>
+        public int Height { get; set; }
+
+        /// <summary>
+        /// The width of the element.
+        /// </summary>
+        public int Width { get; set; }
     }
 }
