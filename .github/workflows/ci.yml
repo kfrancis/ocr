@@ -2,11 +2,14 @@ name: Build for CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ $default-branch ]
     paths-ignore:
       - "**.md"
   pull_request:
-    branches: [ "main" ]
+    branches: [ $default-branch ]
+
+env:
+  BUILD_CONFIGURATION: Release
 
 jobs:
   build-plugin-ci:
@@ -15,11 +18,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup MSBuild path
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v2
+      with:
+        vs-version: 'latest'
+
     - name: Build Maui
-      run: dotnet build src\Plugin.Maui.OCR.sln -c Release
+      run: dotnet build src\Plugin.Maui.OCR.sln -c ${{env.BUILD_CONFIGURATION}}
+
     - name: Restore NuGet packages
       run: msbuild /t:Restore src\Plugin.Xamarin.OCR.sln
+
     - name: Build Xamarin
-      run: msbuild src\Plugin.Xamarin.OCR.sln /p:Configuration=Release /m
+      run: msbuild /m /t:Build src\Plugin.Xamarin.OCR.sln /p:Configuration=${{env.BUILD_CONFIGURATION}}
