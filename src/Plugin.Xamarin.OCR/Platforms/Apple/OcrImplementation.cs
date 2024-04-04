@@ -55,13 +55,13 @@ namespace Plugin.Xamarin.OCR
 
             try
             {
-                var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+                using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
 
-                var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
+                using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
                 {
                     if (error != null)
                     {
-                        tcs.TrySetException(new Exception(error.ToString()));
+                        tcs.TrySetException(new Exception(error.LocalizedDescription);
                         return;
                     }
 
@@ -87,12 +87,12 @@ namespace Plugin.Xamarin.OCR
 
                 recognizeTextRequest.UsesLanguageCorrection = tryHard;
 
-                var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
-                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var performError);
+                using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
+                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
 
-                if (performError != null)
+                if (error != null)
                 {
-                    throw new Exception(performError.ToString());
+                    throw new Exception(error.LocalizedDescription);
                 }
             }
             catch (Exception ex)

@@ -68,8 +68,6 @@ internal partial class OcrImplementation : IOcrService
         var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
         using var inputImage = InputImage.FromBitmap(image, 0);
 
-        
-
         MlKitException? lastException = null;
         const int MaxRetries = 5;
 

@@ -1,3 +1,4 @@
+using CoreFoundation;
 using Foundation;
 using UIKit;
 using Vision;
@@ -48,13 +49,13 @@ partial class OcrImplementation : IOcrService
 
         try
         {
-            var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+            using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
 
-            var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
+            using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
             {
                 if (error != null)
                 {
-                    tcs.TrySetException(new Exception(error.ToString()));
+                    tcs.TrySetException(new Exception(error.LocalizedDescription));
                     return;
                 }
 
@@ -80,12 +81,11 @@ partial class OcrImplementation : IOcrService
 
             recognizeTextRequest.UsesLanguageCorrection = tryHard;
 
-            var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
-            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var performError);
-
-            if (performError != null)
+            using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
+            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
+            if (error != null)
             {
-                throw new Exception(performError.ToString());
+                throw new Exception(error.LocalizedDescription);
             }
         }
         catch (Exception ex)
