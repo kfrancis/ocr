@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +22,22 @@ namespace Plugin.Xamarin.OCR.Sample.UWP
             this.InitializeComponent();
 
             LoadApplication(new Plugin.Xamarin.OCR.Sample.App());
+
+        }
+
+        private void OpenFromFileBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OpenFromCameraBtn_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
