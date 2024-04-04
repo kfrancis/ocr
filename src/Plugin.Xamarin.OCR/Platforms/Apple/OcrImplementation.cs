@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 #if IOS
 using UIKit;
@@ -56,12 +57,13 @@ namespace Plugin.Xamarin.OCR
             try
             {
                 using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+                var imageSize = image.Size;
 
                 using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
                 {
                     if (error != null)
                     {
-                        tcs.TrySetException(new Exception(error.LocalizedDescription);
+                        tcs.TrySetException(new Exception(error.LocalizedDescription));
                         return;
                     }
 
@@ -71,7 +73,7 @@ namespace Plugin.Xamarin.OCR
                         return;
                     }
 
-                    var result = ProcessRecognitionResults(request);
+                    var result = ProcessRecognitionResults(request, imageSize);
                     tcs.TrySetResult(result);
                 });
 
@@ -86,6 +88,9 @@ namespace Plugin.Xamarin.OCR
                 }
 
                 recognizeTextRequest.UsesLanguageCorrection = tryHard;
+                recognizeTextRequest.UsesCpuOnly = false;
+                recognizeTextRequest.PreferBackgroundProcessing = true;
+                recognizeTextRequest.MinimumTextHeight = 0;
 
                 using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
                 ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
@@ -103,7 +108,7 @@ namespace Plugin.Xamarin.OCR
             return await tcs.Task;
         }
 
-        private static OcrResult ProcessRecognitionResults(VNRequest request)
+        private static OcrResult ProcessRecognitionResults(VNRequest request, CGSize imageSize)
         {
             var ocrResult = new OcrResult();
 
@@ -122,15 +127,22 @@ namespace Plugin.Xamarin.OCR
                     ocrResult.AllText += " " + topCandidate.String;
                     ocrResult.Lines.Add(topCandidate.String);
 
+                    // Convert the normalized CGRect to image coordinates
+                    var boundingBox = observation.BoundingBox;
+                    var x = (int)(boundingBox.X * imageSize.Width);
+                    var y = (int)((1 - boundingBox.Y - boundingBox.Height) * imageSize.Height); // flip the Y coordinate
+                    var width = (int)(boundingBox.Width * imageSize.Width);
+                    var height = (int)(boundingBox.Height * imageSize.Height);
+
                     // Splitting by spaces to create elements might not be accurate for all languages/scripts
                     topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
                     {
                         Text = e,
                         Confidence = topCandidate.Confidence,
-                        X = (int)Math.Truncate(observation.BoundingBox.Left),
-                        Y = (int)Math.Truncate(observation.BoundingBox.Top),
-                        Width = (int)Math.Truncate(observation.BoundingBox.Width),
-                        Height = (int)Math.Truncate(observation.BoundingBox.Height)
+                        X = x,
+                        Y = y,
+                        Width = width,
+                        Height = height
                     }));
                 }
             }

@@ -6,7 +6,7 @@
     Title="OCR Plugin">
     <StackLayout Padding="20" Spacing="10">
         <HorizontalStackLayout HorizontalOptions="Center">
-            <Switch x:Name="TryHardSwitch" IsToggled="False" />
+            <Switch x:Name="TryHardSwitch" IsToggled="False" Margin="0,0,10,0" />
             <Label Text="Try Hard?" VerticalOptions="Center" />
         </HorizontalStackLayout>
         <Button

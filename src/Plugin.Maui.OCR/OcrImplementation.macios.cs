@@ -1,4 +1,5 @@
 using CoreFoundation;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 using Vision;
@@ -50,6 +51,7 @@ partial class OcrImplementation : IOcrService
         try
         {
             using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+            var imageSize = image.Size;
 
             using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
             {
@@ -65,7 +67,7 @@ partial class OcrImplementation : IOcrService
                     return;
                 }
 
-                var result = ProcessRecognitionResults(request);
+                var result = ProcessRecognitionResults(request, imageSize);
                 tcs.TrySetResult(result);
             });
 
@@ -80,6 +82,9 @@ partial class OcrImplementation : IOcrService
             }
 
             recognizeTextRequest.UsesLanguageCorrection = tryHard;
+            recognizeTextRequest.UsesCpuOnly = false;
+            recognizeTextRequest.PreferBackgroundProcessing = true;
+            recognizeTextRequest.MinimumTextHeight = 0;
 
             using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
             ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
@@ -96,7 +101,7 @@ partial class OcrImplementation : IOcrService
         return await tcs.Task;
     }
 
-    private static OcrResult ProcessRecognitionResults(VNRequest request)
+    private static OcrResult ProcessRecognitionResults(VNRequest request, CGSize imageSize)
     {
         var ocrResult = new OcrResult();
 
@@ -115,15 +120,22 @@ partial class OcrImplementation : IOcrService
                 ocrResult.AllText += " " + topCandidate.String;
                 ocrResult.Lines.Add(topCandidate.String);
 
+                // Convert the normalized CGRect to image coordinates
+                var boundingBox = observation.BoundingBox;
+                var x = (int)(boundingBox.X * imageSize.Width);
+                var y = (int)((1 - boundingBox.Y - boundingBox.Height) * imageSize.Height); // flip the Y coordinate
+                var width = (int)(boundingBox.Width * imageSize.Width);
+                var height = (int)(boundingBox.Height * imageSize.Height);
+
                 // Splitting by spaces to create elements might not be accurate for all languages/scripts
                 topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
                 {
                     Text = e,
                     Confidence = topCandidate.Confidence,
-                    X = (int)Math.Truncate(observation.BoundingBox.Left),
-                    Y = (int)Math.Truncate(observation.BoundingBox.Top),
-                    Width = (int)Math.Truncate(observation.BoundingBox.Width),
-                    Height = (int)Math.Truncate(observation.BoundingBox.Height)
+                    X = x,
+                    Y = y,
+                    Width = width,
+                    Height = height
                 }));
             }
         }
