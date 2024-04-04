@@ -19,6 +19,8 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
     - name: Build Maui Sample
       run: dotnet build samples\Plugin.Maui.OCR.Sample.sln -c Release
+    - name: Restore NuGet packages
+      run: msbuild /t:Restore src\Plugin.Xamarin.OCR.Sample.sln
     - name: Build Xamarin Sample
       run: msbuild samples\Plugin.Xamarin.OCR.Sample.sln /p:Configuration=Release /m
     

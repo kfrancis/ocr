@@ -16,6 +16,10 @@
             x:Name="OpenFromFileBtn"
             Clicked="OpenFromFileBtn_Clicked"
             Text="From File .." />
+        <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Image x:Name="SelectedImage" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1" />
+            <AbsoluteLayout x:Name="Overlay" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1" IsVisible="False"/>
+        </AbsoluteLayout>
         <Label
             x:Name="ResultLbl"
             HorizontalOptions="Center"
