@@ -2,17 +2,14 @@ name: Build Sample App for CI
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ "main" ]
     paths-ignore:
       - "**.md"
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ "main" ]
 
 env:
   BUILD_CONFIGURATION: Release
-
-permissions:
-  contents: read
 
 jobs:
   build-sample-ci:
