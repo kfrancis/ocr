@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
 using Windows.Storage.Streams;
+using static Plugin.Xamarin.OCR.OcrResult;
 
 namespace Plugin.Xamarin.OCR.Platforms.UWP
 {
@@ -42,8 +44,26 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
             var result = new OcrResult
             {
                 AllText = ocrResult.Text,
-                // Further process the result as needed, e.g., extract lines, words, etc.
+                Success = true,
+                Elements = new List<OcrElement>(),
+                Lines = new List<string>()
             };
+
+            foreach (var line in ocrResult.Lines)
+            {
+                result.Lines.Add(line.Text);
+                foreach (var word in line.Words)
+                {
+                    result.Elements.Add(new OcrElement
+                    {
+                        Text = word.Text,
+                        X = (int)Math.Truncate(word.BoundingRect.X),
+                        Y = (int)Math.Truncate(word.BoundingRect.Y),
+                        Width = (int)Math.Truncate(word.BoundingRect.Width),
+                        Height = (int)Math.Truncate(word.BoundingRect.Height)
+                    });
+                }
+            }
 
             return result;
         }

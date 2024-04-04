@@ -31,7 +31,11 @@ namespace Plugin.Xamarin.OCR
                         var ocrElement = new OcrElement
                         {
                             Text = element.Text,
-                            Confidence = element.Confidence
+                            Confidence = element.Confidence,
+                            X = element.BoundingBox.Left,
+                            Y = element.BoundingBox.Top,
+                            Width = element.BoundingBox.Width(),
+                            Height = element.BoundingBox.Height()
                         };
                         ocrResult.Elements.Add(ocrElement);
                     }

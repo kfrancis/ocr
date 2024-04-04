@@ -110,7 +110,14 @@ namespace Plugin.Xamarin.OCR
                     ocrResult.Lines.Add(topCandidate.String);
 
                     // Splitting by spaces to create elements might not be accurate for all languages/scripts
-                    topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement { Text = e, Confidence = topCandidate.Confidence }));
+                    topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement {
+                        Text = e,
+                        Confidence = topCandidate.Confidence,
+                        X = (int)Math.Truncate(observation.BoundingBox.Left),
+                        Y = (int)Math.Truncate(observation.BoundingBox.Top),
+                        Width = (int)Math.Truncate(observation.BoundingBox.Width),
+                        Height = (int)Math.Truncate(observation.BoundingBox.Height)
+                    }));
                 }
             }
 
