@@ -5,11 +5,11 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 ![](nuget.png)
 # Plugin.Xamarin.OCR | Plugin.Maui.OCR
 
-`Plugin.Xamarin.OCR` and `Plugin.Maui.OCR` provides the ability to do simple text from image OCR using nothing but platform APIs.
+`Plugin.Xamarin.OCR` and `Plugin.Maui.OCR` provide the ability to do simple text from image OCR using nothing but platform APIs.
 
 ## Should you use this yet?
 
-**NO**. This is a work in progress and is not ready for production use. It is not feature complete and is not yet stable.
+**YES**. Let me know how it works for you.
 
 ## What Works Matrix
 
@@ -22,14 +22,14 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 
 ## Why
 
-Why am I making this? I'm making this because I want to make it easier for developers to do OCR in their apps. I want to make it so that you can just use this plugin and not have to worry about the platform specifics.
+Why am I making this? I'm doing this because I want to make it easier for developers to do OCR in their apps. I want to make it so that you can just use this plugin and not have to worry about the platform specifics.
 
-To many times I've tried to do OCR and had to wrestle with external dependencies like Tesseract (with it's dependencies Leptonica, etc) and these types
+Too many times I've tried to do OCR and had to wrestle with external dependencies like Tesseract (with its dependencies Leptonica, etc) and these types
 of native dependencies can be a real pain to work with. 
 
 ### Xamarin??
 
-Well, I still have to maintain a Xamarin app that has used Tesseract and I'm tired of all the problems that come with it. I want to make it easier for myself and others to do OCR in their apps.
+Well, I still have to maintain a Xamarin app that uses Tesseract and I'm tired of all the problems that come with it. I want to make it easier for myself and others to do OCR in their apps.
 
 ## Install Plugin
 
