@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Plugin.Shared.OCR;
 
-namespace Plugin.Xamarin.OCR.iOS
+namespace Plugin.Xamarin.OCR
 {
-    public class OcrImplementation : IOcrService
+    internal class OcrImplementation : IOcrService
     {
         public Task InitAsync(CancellationToken ct = default)
         {
