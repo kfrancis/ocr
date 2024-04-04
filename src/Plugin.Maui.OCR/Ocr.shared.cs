@@ -1,13 +1,11 @@
-using Plugin.Shared.OCR;
-
 namespace Plugin.Maui.OCR;
 
 /// <summary>
 /// OCR API.
 /// </summary>
-public static class OCR
+public static class OcrPlugin
 {
-    static IOcrService? s_defaultImplementation;
+    private static IOcrService? s_defaultImplementation;
 
     /// <summary>
     /// Provides the default implementation for static usage of this API.

@@ -1,5 +1,4 @@
 using Foundation;
-using Plugin.Shared.OCR;
 using UIKit;
 using Vision;
 

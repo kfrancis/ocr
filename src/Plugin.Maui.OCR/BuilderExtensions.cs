@@ -1,5 +1,3 @@
-using Plugin.Shared.OCR;
-
 namespace Plugin.Maui.OCR;
 
 public static class OcrServiceExtensions

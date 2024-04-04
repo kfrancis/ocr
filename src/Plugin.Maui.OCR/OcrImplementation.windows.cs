@@ -1,4 +1,3 @@
-using Plugin.Shared.OCR;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
@@ -24,7 +23,7 @@ partial class OcrImplementation : IOcrService
     /// <param name="imageData">The image data</param>
     /// <param name="ct">An optional cancellation token</param>
     /// <returns>The OCR result</returns>
-    public async Task<Shared.OCR.OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
+    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
     {
         var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new NotSupportedException("OCR not supported on this device or no languages are installed.");
 
@@ -37,7 +36,7 @@ partial class OcrImplementation : IOcrService
 
         var ocrResult = await ocrEngine.RecognizeAsync(softwareBitmap);
 
-        var result = new Shared.OCR.OcrResult
+        var result = new OcrResult
         {
             AllText = ocrResult.Text,
             // Further process the result as needed, e.g., extract lines, words, etc.

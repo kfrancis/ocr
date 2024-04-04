@@ -54,7 +54,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Plugin.Maui.OCR\Plugin.Maui.OCR.csproj" />
-	  <ProjectReference Include="..\..\src\Plugin.Shared.OCR\Plugin.Shared.OCR.csproj" />
 	  <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
       <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <Version>1.6.2.2</Version>

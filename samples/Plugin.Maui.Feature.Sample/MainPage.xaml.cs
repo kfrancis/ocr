@@ -1,4 +1,4 @@
-using Plugin.Shared.OCR;
+using Plugin.Maui.OCR;
 
 namespace Plugin.Maui.Feature.Sample;
 
