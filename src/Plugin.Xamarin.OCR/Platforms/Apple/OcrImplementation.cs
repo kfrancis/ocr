@@ -38,9 +38,10 @@ namespace Plugin.Xamarin.OCR
         /// Takes an image and returns the text found in the image.
         /// </summary>
         /// <param name="imageData">The image data</param>
+        /// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
         /// <param name="ct">An optional cancellation token</param>
         /// <returns>The OCR result</returns>
-        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
+        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
         {
             if (!_isInitialized)
             {
@@ -73,6 +74,18 @@ namespace Plugin.Xamarin.OCR
                     var result = ProcessRecognitionResults(request);
                     tcs.TrySetResult(result);
                 });
+
+                switch (tryHard)
+                {
+                    case true:
+                        recognizeTextRequest.RecognitionLevel = VNRequestTextRecognitionLevel.Accurate;
+                        break;
+                    case false:
+                        recognizeTextRequest.RecognitionLevel = VNRequestTextRecognitionLevel.Fast;
+                        break;
+                }
+
+                recognizeTextRequest.UsesLanguageCorrection = tryHard;
 
                 var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
                 ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var performError);

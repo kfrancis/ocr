@@ -11,7 +11,7 @@ namespace Plugin.Xamarin.OCR
             throw new NotImplementedException();
         }
 
-        public Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
+        public Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
         {
             throw new NotImplementedException();
         }

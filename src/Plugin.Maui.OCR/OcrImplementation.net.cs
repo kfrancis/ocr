@@ -16,9 +16,10 @@ partial class OcrImplementation : IOcrService
     /// Takes an image and returns the text found in the image.
     /// </summary>
     /// <param name="imageData">The image data</param>
+    /// <param name="tryHard">No effect.</param>
     /// <param name="ct">An optional cancellation token</param>
     /// <returns>The OCR result</returns>
-    public Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
+    public Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }

@@ -74,10 +74,12 @@ public partial class MainPage : ContentPage
         // Create a byte array to hold the image data
         var imageData = new byte[sourceStream.Length];
 
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
         // Read the stream into the byte array
-        await sourceStream.ReadAsync(imageData);
+        await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
 
         // Process the image data using the OCR service
-        return await _ocr.RecognizeTextAsync(imageData);
+        return await _ocr.RecognizeTextAsync(imageData, TryHardSwitch.IsToggled, cancellationTokenSource.Token);
     }
 }

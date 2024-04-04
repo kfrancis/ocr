@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Gms.Tasks;
 using Android.Graphics;
 using Android.Util;
+using Java.Util.Concurrent;
 using Xamarin.Google.MLKit.Common;
 using Xamarin.Google.MLKit.Vision.Common;
 using Xamarin.Google.MLKit.Vision.Text;
@@ -61,22 +62,36 @@ namespace Plugin.Xamarin.OCR
         /// Takes an image and returns the text found in the image.
         /// </summary>
         /// <param name="imageData">The image data</param>
+        /// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
         /// <param name="ct">An optional cancellation token</param>
         /// <returns>The OCR result</returns>
-        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, System.Threading.CancellationToken ct = default)
+        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
         {
             var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
             using var inputImage = InputImage.FromBitmap(image, 0);
-
-            using var textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
 
             MlKitException? lastException = null;
             const int MaxRetries = 5;
 
             for (var retry = 0; retry < MaxRetries; retry++)
             {
+                ITextRecognizer? textScanner = null;
+
                 try
                 {
+                    if (tryHard)
+                    {
+                        // For more accurate results, use the cloud-based recognizer (requires internet).
+                        textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
+                            .SetExecutor(Executors.NewFixedThreadPool(1))
+                            .Build());
+                    }
+                    else
+                    {
+                        // Use the default on-device recognizer for faster results.
+                        textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+                    }
+
                     // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
                     return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
                 }
@@ -86,6 +101,11 @@ namespace Plugin.Xamarin.OCR
                     lastException = ex;
                     Debug.WriteLine($"OCR model is not ready. Waiting before retrying... Attempt {retry + 1}/{MaxRetries}");
                     await Task.Delay(5000, ct);
+                }
+                finally
+                {
+                    textScanner?.Dispose();
+                    textScanner = null;
                 }
             }
 

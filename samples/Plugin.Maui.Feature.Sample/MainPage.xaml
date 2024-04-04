@@ -5,6 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="OCR Plugin">
     <StackLayout Padding="20" Spacing="10">
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Switch x:Name="TryHardSwitch" IsToggled="False" />
+            <Label Text="Try Hard?" VerticalOptions="Center" />
+        </HorizontalStackLayout>
         <Button
             x:Name="OpenFromCameraBtn"
             MaximumHeightRequest="100"
@@ -17,7 +21,7 @@
             MaximumWidthRequest="200"
             Clicked="OpenFromFileBtn_Clicked"
             Text="From File .." />
-        <Label x:Name="ResultLbl" Text="Waiting for results .." HorizontalOptions="Center" />
+        <Label x:Name="ResultLbl" Text="Waiting for results .." HorizontalOptions="Center" MinimumHeightRequest="200" BackgroundColor="{StaticResource White}" />
         <Button
             IsEnabled="False"
             x:Name="ClearBtn"

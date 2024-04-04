@@ -94,12 +94,12 @@
     <Compile Include="Platforms\NotImplemented\**\*.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Roslynator.Analyzers" Version="4.12.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PackageReference Include="Roslynator.Analyzers" Version="4.12.0" >
+    <PrivateAssets>all</PrivateAssets>
+    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  </PackageReference>
+</ItemGroup>
 
   <ItemGroup>
     <None Remove="Abstractions\IOcrService.cs" />

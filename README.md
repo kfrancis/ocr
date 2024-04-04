@@ -109,7 +109,7 @@ The `IOcrService` interface exposes the following methods:
 public interface IOcrService
 {
     Task InitAsync(CancellationToken ct = default);
-    Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default);
+    Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default);
 }
 
 public class OcrResult
@@ -125,6 +125,12 @@ public class OcrResult
     {
         public string Text { get; set; }
         public float Confidence { get; set; }
+
+        // Useful for bounding boxes
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Height { get; set; }
+        public int Width { get; set; }
     }
 }
 ```
@@ -151,10 +157,10 @@ This will cause the model necessary to be installed when the application is inst
 
 ### Dependency Injection
 
-You will first need to register the `OCR` with the `MauiAppBuilder` following the same pattern that the .NET MAUI Essentials libraries follow.
+You will first need to register the `OcrPlugin` with the `MauiAppBuilder` following the same pattern that the .NET MAUI Essentials libraries follow.
 
 ```csharp
-builder.Services.AddSingleton(OCR.Default);
+builder.Services.AddSingleton(OcrPlugin.Default);
 ```
 
 You can then enable your classes to depend on `IOcrService` as per the following example.
@@ -208,13 +214,13 @@ Once you have the `OCR` instance, you can interact with it in the following ways
 
 #### Methods
 
-##### `InitAsync()`
+##### `InitAsync(CancellationToken ct = default)`
 
 Initialize the feature. Might get removed, most platforms (if not all) don't currently require any addition initialization.
 
-##### `RecognizeTextAsync(byte[] imageData)`
+##### `RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)`
 
-Recognize text from an image.
+Recognize text from an image. Specify "tryHard" if you want to tell the platform API to do a better job (fast vs accurate, and use language correction (ios/mac)) though it seems very accurate normally.
 
 # Acknowledgements
 

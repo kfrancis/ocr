@@ -26,9 +26,10 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
         /// Takes an image and returns the text found in the image.
         /// </summary>
         /// <param name="imageData">The image data</param>
+        /// <param name="tryHard">No effect.</param>
         /// <param name="ct">An optional cancellation token</param>
         /// <returns>The OCR result</returns>
-        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, CancellationToken ct = default)
+        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
         {
             var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new NotSupportedException("OCR not supported on this device or no languages are installed.");
 
