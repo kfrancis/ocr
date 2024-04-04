@@ -33,7 +33,8 @@ Well, I still have to maintain a Xamarin app that has used Tesseract and I'm tir
 
 ## Install Plugin
 
-[![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.OCR.svg?label=NuGet)](https://www.nuget.org/packages/Plugin.Maui.OCR/)
+[![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.OCR.svg?label=MAUI)](https://www.nuget.org/packages/Plugin.Maui.OCR/)
+[![NuGet](https://img.shields.io/nuget/v/Plugin.Xamarin.OCR.svg?label=Xamarin)](https://www.nuget.org/packages/Plugin.Xamarin.OCR/)
 
 Available on NuGet for [MAUI](http://www.nuget.org/packages/Plugin.Maui.OCR) and [Xamarin](http://www.nuget.org/packages/Plugin.Xamarin.OCR).
 
