@@ -1,5 +1,4 @@
 using System;
-using Plugin.Shared.OCR;
 
 namespace Plugin.Xamarin.OCR
 {

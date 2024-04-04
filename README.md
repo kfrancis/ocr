@@ -188,7 +188,7 @@ public class OcrViewModel
     {
         byte[] imageData = GetImageData();
 
-        var result = await OCR.Default.RecognizeTextAsync(imageData);
+        var result = await OcrPlugin.Default.RecognizeTextAsync(imageData);
     }
 }
 ```
