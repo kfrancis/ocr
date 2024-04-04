@@ -19,6 +19,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+
     - name: Setup MSBuild path
       uses: microsoft/setup-msbuild@v2
       with:
@@ -28,7 +34,7 @@ jobs:
       run: dotnet build src\Plugin.Maui.OCR.sln -c ${{env.BUILD_CONFIGURATION}}
 
     - name: Restore NuGet packages
-      run: msbuild /t:Restore src\Plugin.Xamarin.OCR.sln
+      run: msbuild /t:Restore src\Plugin.Xamarin.OCR.sln -maxcpucount
 
     - name: Build Xamarin
-      run: msbuild /m /t:Build src\Plugin.Xamarin.OCR.sln /p:Configuration=${{env.BUILD_CONFIGURATION}}
+      run: msbuild /m /t:Build src\Plugin.Xamarin.OCR.sln /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:RestorePackages=false -maxcpucount
