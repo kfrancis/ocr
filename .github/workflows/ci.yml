@@ -15,5 +15,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
+    - name: Build Maui
       run: dotnet build src\Plugin.Maui.OCR.sln -c Release
+    - name: Build Xamarin
+      run: dotnet build src\Plugin.Xamarin.OCR.sln -c Release

@@ -19,9 +19,15 @@ jobs:
       - name: Get version information from tag
         id: get_version
         uses: battila7/get-version-action@v2
-      - name: Pack
+      - name: Pack Maui
         run: dotnet pack src\Plugin.Maui.OCR.sln -c Release -p:PackageVersion=${{ steps.get_version.outputs.version-without-v }}
-      - name: Push
+      - name: Push Maui
         run: dotnet nuget push src\Plugin.Maui.OCR\bin\Release\Plugin.Maui.OCR.${{ steps.get_version.outputs.version-without-v }}.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.NUGET_API_KEY }}
+      - name: Pack Xamarin
+        run: dotnet pack src\Plugin.Xamarin.OCR.sln -c Release -p:PackageVersion=${{ steps.get_version.outputs.version-without-v }}
+      - name: Push Xamarin
+        run: dotnet nuget push src\Plugin.Xamarin.OCR\bin\Release\Plugin.Xamarin.OCR.${{ steps.get_version.outputs.version-without-v }}.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.NUGET_API_KEY }}
