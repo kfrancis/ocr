@@ -5,6 +5,7 @@ using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
 using Xamarin.Essentials;
+using AndroidX.Core.OS;
 
 namespace Plugin.Xamarin.OCR.Sample.Droid
 {
@@ -14,7 +15,6 @@ namespace Plugin.Xamarin.OCR.Sample.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
             Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());

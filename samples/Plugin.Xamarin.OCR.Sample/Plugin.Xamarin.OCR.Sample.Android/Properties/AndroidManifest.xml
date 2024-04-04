@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="com.companyname.plugin.xamarin.ocr.sample">
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
-    <application android:label="Plugin.Xamarin.OCR.Sample.Android" android:theme="@style/MainTheme"></application>
+    <application android:label="Plugin.Xamarin.OCR.Sample.Android" android:theme="@style/MainTheme">
+    </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 </manifest>
