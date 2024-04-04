@@ -88,10 +88,6 @@
     <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Plugin.Shared.OCR\Plugin.Shared.OCR.csproj">
-      <Project>{1c326cc3-a6c6-4a1b-b45b-1e943624b133}</Project>
-      <Name>Plugin.Shared.OCR</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\src\Plugin.Xamarin.OCR\Plugin.Xamarin.OCR.csproj">
       <Project>{32c52c31-e3c1-41a5-94a4-9cf1b532b2bd}</Project>
       <Name>Plugin.Xamarin.OCR</Name>

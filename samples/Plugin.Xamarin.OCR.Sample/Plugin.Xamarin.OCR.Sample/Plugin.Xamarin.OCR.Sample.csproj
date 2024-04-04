@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Plugin.Shared.OCR\Plugin.Shared.OCR.csproj" />
     <ProjectReference Include="..\..\..\src\Plugin.Xamarin.OCR\Plugin.Xamarin.OCR.csproj" />
   </ItemGroup>
 </Project>

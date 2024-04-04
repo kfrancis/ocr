@@ -15,8 +15,8 @@ This example README has some dummy APIs you'll need to replace and only acts as 
 
 | Platform | iOS | Android | Windows | macOS |
 |----------|-----|---------|---------|-------|
-| Xamarin  | WIP | Yes | WIP | WIP |
-| MAUI     | Yes | Yes | Yes | Yes |
+| Xamarin  | Yes |   Yes   |   WIP   |  WIP  |
+| MAUI     | Yes |   Yes   |   Yes   |  Yes  |
 
 [![Build for CI](https://github.com/kfrancis/ocr/actions/workflows/ci.yml/badge.svg)](https://github.com/kfrancis/ocr/actions/workflows/ci.yml)
 

@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
-    <IsPackageProject>$(MSBuildProjectName.Contains('Plugin'))</IsPackageProject>
-  </PropertyGroup>
+  <IsPackageProject Condition="!$([System.String]::new('$(MSBuildProjectName)').Contains('Sample'))">true</IsPackageProject>
+  <IsPackageProject Condition="$([System.String]::new('$(MSBuildProjectName)').Contains('Sample'))">false</IsPackageProject>
+</PropertyGroup>
   <PropertyGroup Condition=" $(IsPackageProject) ">
     <Copyright>Copyright (c) Kori Francis</Copyright> 
     <Authors>Kori Francis</Authors>
@@ -41,15 +42,11 @@
   </PropertyGroup>
         
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup Condition=" $(IsPackageProject) ">
     <None Include="..\..\nuget.png" Pack="true" PackagePath="icon.png"/>
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 </Project>

@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Xamarin.OCR.Sample.i
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugin.Xamarin.OCR.Sample", "Plugin.Xamarin.OCR.Sample\Plugin.Xamarin.OCR.Sample\Plugin.Xamarin.OCR.Sample.csproj", "{276658CE-B4B9-45C8-84CA-5935ED1889ED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugin.Shared.OCR", "..\src\Plugin.Shared.OCR\Plugin.Shared.OCR.csproj", "{1C326CC3-A6C6-4A1B-B45B-1E943624B133}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{D67C2A02-A3F2-403D-9839-BA0B2D948778}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{601F61DD-ACC1-4A8E-A06D-59EA2345A05A}"
@@ -22,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.editorconfig = ..\.editorconfig
 		..\.gitattributes = ..\.gitattributes
 		..\.gitignore = ..\.gitignore
+		..\Directory.build.props = ..\Directory.build.props
+		..\Directory.build.targets = ..\Directory.build.targets
 		..\LICENSE = ..\LICENSE
 		..\nuget.png = ..\nuget.png
 		..\README.md = ..\README.md
@@ -165,30 +165,6 @@ Global
 		{276658CE-B4B9-45C8-84CA-5935ED1889ED}.Release|x64.Build.0 = Release|Any CPU
 		{276658CE-B4B9-45C8-84CA-5935ED1889ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{276658CE-B4B9-45C8-84CA-5935ED1889ED}.Release|x86.Build.0 = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|ARM.Build.0 = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|x64.Build.0 = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Debug|x86.Build.0 = Debug|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|ARM.ActiveCfg = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|ARM.Build.0 = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|iPhone.Build.0 = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|x64.ActiveCfg = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|x64.Build.0 = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|x86.ActiveCfg = Release|Any CPU
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133}.Release|x86.Build.0 = Release|Any CPU
 		{32C52C31-E3C1-41A5-94A4-9CF1B532B2BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32C52C31-E3C1-41A5-94A4-9CF1B532B2BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32C52C31-E3C1-41A5-94A4-9CF1B532B2BD}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -222,7 +198,6 @@ Global
 		{E55043A2-C982-46A3-B8CA-D246D273FB0D} = {601F61DD-ACC1-4A8E-A06D-59EA2345A05A}
 		{A84147CA-4FF7-4A28-8853-BB27F336E905} = {601F61DD-ACC1-4A8E-A06D-59EA2345A05A}
 		{276658CE-B4B9-45C8-84CA-5935ED1889ED} = {601F61DD-ACC1-4A8E-A06D-59EA2345A05A}
-		{1C326CC3-A6C6-4A1B-B45B-1E943624B133} = {D67C2A02-A3F2-403D-9839-BA0B2D948778}
 		{32C52C31-E3C1-41A5-94A4-9CF1B532B2BD} = {D67C2A02-A3F2-403D-9839-BA0B2D948778}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

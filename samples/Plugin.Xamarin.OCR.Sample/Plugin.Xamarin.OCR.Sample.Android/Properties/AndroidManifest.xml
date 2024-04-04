@@ -3,6 +3,7 @@
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
     <application android:label="Plugin.Xamarin.OCR.Sample.Android" android:theme="@style/MainTheme">
     </application>
+    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="ocr" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <queries>
         <intent>

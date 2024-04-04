@@ -32,6 +32,10 @@
   <ItemGroup>
     <Compile Include="*.cs" />
     <None Include="..\..\README.md" Pack="true" PackagePath="." />
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
@@ -59,11 +63,11 @@
   <!-- Android -->
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <Compile Include="Platforms\Android\**\*.cs" />
-    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.2">
+    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.0">
     </PackageReference>
-    <PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.3.2">
+    <PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.3.0">
     </PackageReference>
-    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.2">
+    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.0">
     </PackageReference>
     <PackageReference Include="Xamarin.Google.MLKit.BarcodeScanning" Version="117.2.0.3">
     </PackageReference>
@@ -98,7 +102,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Plugin.Shared.OCR\Plugin.Shared.OCR.csproj" />
+    <None Remove="Abstractions\IOcrService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Abstractions\IOcrService.cs" />
   </ItemGroup>
 
 </Project>
