@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Plugin.Shared.OCR;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -28,18 +23,10 @@ namespace Plugin.Xamarin.OCR.Sample
             await _ocr.InitAsync();
         }
 
-        private async void OpenFromFileBtn_Clicked(object sender, EventArgs e)
+        private void ClearBtn_Clicked(object sender, EventArgs e)
         {
-            var photo = await MediaPicker.PickPhotoAsync();
-
-            if (photo != null)
-            {
-                var result = await ProcessPhoto(photo);
-
-                ResultLbl.Text = result.AllText;
-
-                ClearBtn.IsEnabled = true;
-            }
+            ResultLbl.Text = string.Empty;
+            ClearBtn.IsEnabled = false;
         }
 
         private async void OpenFromCameraBtn_Clicked(object sender, EventArgs e)
@@ -63,10 +50,18 @@ namespace Plugin.Xamarin.OCR.Sample
             }
         }
 
-        private void ClearBtn_Clicked(object sender, EventArgs e)
+        private async void OpenFromFileBtn_Clicked(object sender, EventArgs e)
         {
-            ResultLbl.Text = string.Empty;
-            ClearBtn.IsEnabled = false;
+            var photo = await MediaPicker.PickPhotoAsync();
+
+            if (photo != null)
+            {
+                var result = await ProcessPhoto(photo);
+
+                ResultLbl.Text = result.AllText;
+
+                ClearBtn.IsEnabled = true;
+            }
         }
 
         /// <summary>

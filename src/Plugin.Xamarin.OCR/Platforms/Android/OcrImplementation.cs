@@ -4,12 +4,11 @@ using System.Threading.Tasks;
 using Android.Gms.Tasks;
 using Android.Graphics;
 using Android.Util;
-using Plugin.Shared.OCR;
 using Xamarin.Google.MLKit.Common;
 using Xamarin.Google.MLKit.Vision.Common;
 using Xamarin.Google.MLKit.Vision.Text;
 using Xamarin.Google.MLKit.Vision.Text.Latin;
-using static Plugin.Shared.OCR.OcrResult;
+using static Plugin.Xamarin.OCR.OcrResult;
 using Task = System.Threading.Tasks.Task;
 
 namespace Plugin.Xamarin.OCR
