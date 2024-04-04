@@ -20,11 +20,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.editorconfig = ..\.editorconfig
 		..\.gitattributes = ..\.gitattributes
 		..\.gitignore = ..\.gitignore
+		..\.github\workflows\ci-sample.yml = ..\.github\workflows\ci-sample.yml
+		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
 		..\Directory.build.props = ..\Directory.build.props
 		..\Directory.build.targets = ..\Directory.build.targets
 		..\LICENSE = ..\LICENSE
 		..\nuget.png = ..\nuget.png
 		..\README.md = ..\README.md
+		..\.github\workflows\release-nuget.yml = ..\.github\workflows\release-nuget.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugin.Xamarin.OCR", "..\src\Plugin.Xamarin.OCR\Plugin.Xamarin.OCR.csproj", "{32C52C31-E3C1-41A5-94A4-9CF1B532B2BD}"

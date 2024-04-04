@@ -15,8 +15,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v1.1
     - name: Build Maui Sample
       run: dotnet build samples\Plugin.Maui.OCR.Sample.sln -c Release
     - name: Build Xamarin Sample
-      run: dotnet build samples\Plugin.Xamarin.OCR.Sample.sln -c Release
+      run: msbuild samples\Plugin.Xamarin.OCR.Sample.sln /p:Configuration=Release /m
     
