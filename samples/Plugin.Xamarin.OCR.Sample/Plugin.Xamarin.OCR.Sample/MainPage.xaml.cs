@@ -123,7 +123,7 @@ namespace Plugin.Xamarin.OCR.Sample
             _actualHeight = bitmap.Height;
 
             // Assuming ProcessImage returns the actual dimensions of the image
-            var ocrResult = await _ocr.RecognizeTextAsync(imageData);
+            var ocrResult = await _ocr.RecognizeTextAsync(imageData, TryHardSwitch.IsToggled);
 
             // Display the image
             var imageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
@@ -144,7 +144,7 @@ namespace Plugin.Xamarin.OCR.Sample
             return xamarinFormsUnits * screenDensity;
         }
 
-        private async void OnSelectedImageSizeChanged(object sender, EventArgs e)
+        private void OnSelectedImageSizeChanged(object sender, EventArgs e)
         {
             // Unhook the SizeChanged event handler so this doesn't run again if not needed
             SelectedImage.SizeChanged -= OnSelectedImageSizeChanged;
