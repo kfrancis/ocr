@@ -80,6 +80,6 @@ public partial class MainPage : ContentPage
         await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
 
         // Process the image data using the OCR service
-        return await _ocr.RecognizeTextAsync(imageData, new OcrOptions("pt-BR", TryHardSwitch.IsToggled), cancellationTokenSource.Token);
+        return await _ocr.RecognizeTextAsync(imageData, TryHardSwitch.IsToggled, cancellationTokenSource.Token);
     }
 }
