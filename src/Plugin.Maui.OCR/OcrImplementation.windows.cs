@@ -8,13 +8,17 @@ namespace Plugin.Maui.OCR;
 
 partial class OcrImplementation : IOcrService
 {
+    private IReadOnlyCollection<string> _supportedLanguages;
+    public IReadOnlyCollection<string> SupportedLanguages => _supportedLanguages;
+
     /// <summary>
     /// Initialize the OCR on the platform
     /// </summary>
     /// <param name="ct">An optional cancellation token</param>
     public Task InitAsync(CancellationToken ct = default)
     {
-        // Windows OCR doesn't require explicit initialization.
+        _supportedLanguages = OcrEngine.AvailableRecognizerLanguages.Select(x => x.LanguageTag).ToList().AsReadOnly();
+
         return Task.CompletedTask;
     }
 
@@ -27,6 +31,16 @@ partial class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
+        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard), ct);
+    }
+
+    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
+    {
+        if (!string.IsNullOrEmpty(options.Language) && !OcrEngine.IsLanguageSupported(new Windows.Globalization.Language(options.Language)))
+        {
+            throw new NotSupportedException($"Unsupported language \"{options.Language}\". Supported languages are: ({string.Join(",", OcrEngine.AvailableRecognizerLanguages.Select(x => x.LanguageTag))})");
+        }
+
         var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new NotSupportedException("OCR not supported on this device or no languages are installed.");
 
         using var stream = new InMemoryRandomAccessStream();

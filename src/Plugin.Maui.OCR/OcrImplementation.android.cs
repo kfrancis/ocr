@@ -14,6 +14,8 @@ namespace Plugin.Maui.OCR;
 
 internal partial class OcrImplementation : IOcrService
 {
+    public IReadOnlyCollection<string> SupportedLanguages => throw new NotImplementedException();
+
     public static OcrResult ProcessOcrResult(Java.Lang.Object result)
     {
         var ocrResult = new OcrResult();
@@ -65,6 +67,20 @@ internal partial class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
     {
+        return await RecognizeTextAsync(imageData, new OcrOptions(TryHard: tryHard), ct);
+    }
+
+    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+    {
+        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
+        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
+        task.AddOnCompleteListener(taskCompleteListener);
+
+        return taskCompletionSource.Task;
+    }
+
+    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
+    {
         var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
         using var inputImage = InputImage.FromBitmap(image, 0);
 
@@ -77,7 +93,7 @@ internal partial class OcrImplementation : IOcrService
 
             try
             {
-                if (tryHard)
+                if (options.TryHard)
                 {
                     // For more accurate results, use the cloud-based recognizer (requires internet).
                     textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
@@ -116,15 +132,6 @@ internal partial class OcrImplementation : IOcrService
         {
             throw new InvalidOperationException("OCR operation failed without an exception.");
         }
-    }
-
-    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
-    {
-        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
-        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
-        task.AddOnCompleteListener(taskCompleteListener);
-
-        return taskCompletionSource.Task;
     }
 
     public class OnFailureListener : Java.Lang.Object, IOnFailureListener
