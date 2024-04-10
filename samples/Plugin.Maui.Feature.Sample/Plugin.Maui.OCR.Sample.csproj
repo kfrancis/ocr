@@ -31,7 +31,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
-	  <CodesignKey>Apple Development: Created via API (BQQPP4HLY2)</CodesignKey>
+	  <CodesignKey>Apple Development: Created via API (F7A3Y8MBSA)</CodesignKey>
 	  <CodesignProvision>VS: WildCard Development</CodesignProvision>
 	</PropertyGroup>
 
@@ -58,11 +58,5 @@
       <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <Version>1.6.2.2</Version>
       </PackageReference>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
-	  <PackageReference Include="Xamarin.GooglePlayServices.MLKit.Text.Recognition">
-	    <Version>119.0.0.5</Version>
-	  </PackageReference>
 	</ItemGroup>
 </Project>

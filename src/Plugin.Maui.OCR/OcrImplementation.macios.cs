@@ -1,5 +1,7 @@
 using CoreGraphics;
 using Foundation;
+using HealthKit;
+using MapKit;
 using UIKit;
 using Vision;
 
@@ -25,8 +27,6 @@ partial class OcrImplementation : IOcrService
             _isInitialized = true;
         }
 
-        // Perform any necessary initialization here.
-        // Example: Loading models, setting up resources, etc.
         if (OperatingSystem.IsIOSVersionAtLeast(14, 2) || OperatingSystem.IsMacOSVersionAtLeast(14, 0, 0))
         {
             var tcs = new TaskCompletionSource<OcrResult>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -88,23 +88,44 @@ partial class OcrImplementation : IOcrService
                 ocrResult.AllText += " " + topCandidate.String;
                 ocrResult.Lines.Add(topCandidate.String);
 
-                // Convert the normalized CGRect to image coordinates
-                var boundingBox = observation.BoundingBox;
-                var x = (int)(boundingBox.X * imageSize.Width);
-                var y = (int)((1 - boundingBox.Y - boundingBox.Height) * imageSize.Height); // flip the Y coordinate
-                var width = (int)(boundingBox.Width * imageSize.Width);
-                var height = (int)(boundingBox.Height * imageSize.Height);
-
-                // Splitting by spaces to create elements might not be accurate for all languages/scripts
-                topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
+                if (!string.IsNullOrEmpty(topCandidate.String))
                 {
-                    Text = e,
-                    Confidence = topCandidate.Confidence,
-                    X = x,
-                    Y = y,
-                    Width = width,
-                    Height = height
-                }));
+                    var textRange = new NSRange(0, topCandidate.String.Length);
+                    using var box = topCandidate.GetBoundingBox(textRange, out var boxError);
+                    if (boxError != null)
+                    {
+                        throw new Exception(boxError.LocalizedDescription);
+                    }
+
+                    var boxRect = ConvertToImageRect(box, imageSize);
+
+                    // Splitting by spaces to create elements might not be accurate for all languages/scripts
+                    topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
+                    {
+                        Text = e,
+                        Confidence = topCandidate.Confidence,
+                        X = Convert.ToInt32(boxRect.X),
+                        Y = Convert.ToInt32(boxRect.Y),
+                        Width = Convert.ToInt32(boxRect.Width),
+                        Height = Convert.ToInt32(boxRect.Height)
+                    }));
+                }
+                else
+                {
+                    // Splitting by spaces to create elements might not be accurate for all languages/scripts
+                    topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
+                    {
+                        Text = e,
+                        Confidence = topCandidate.Confidence
+                    }));
+                }
+
+                //// Convert the normalized CGRect to image coordinates
+                //var boundingBox = observation.BoundingBox;
+                //var x = (int)(boundingBox.X * imageSize.Width);
+                //var y = (int)((1 - boundingBox.Y - boundingBox.Height) * imageSize.Height); // flip the Y coordinate
+                //var width = (int)(boundingBox.Width * imageSize.Width);
+                //var height = (int)(boundingBox.Height * imageSize.Height);
             }
         }
 
@@ -115,6 +136,28 @@ partial class OcrImplementation : IOcrService
     private static UIImage? ImageFromByteArray(byte[] data)
     {
         return data != null ? new UIImage(NSData.FromArray(data)) : null;
+    }
+
+    private static Rect ConvertToImageRect(VNRectangleObservation boundingBox, CGSize imageSize)
+    {
+        var topLeft = NormalizePoint(boundingBox.TopLeft, imageSize);
+        var bottomRight = NormalizePoint(boundingBox.BottomRight, imageSize);
+
+        // Flip it for top left (0,0) image coordinates
+        return new Rect(
+            topLeft.X,
+            imageSize.Height - topLeft.Y,
+            Math.Abs(bottomRight.X - topLeft.X),
+            Math.Abs(topLeft.Y - bottomRight.Y)
+        );
+    }
+
+    private static Point NormalizePoint(CGPoint point, CGSize imageSize)
+    {
+        return new Point(
+            point.X * imageSize.Width,
+            point.Y * imageSize.Height
+        );
     }
 
     /// <summary>
@@ -188,7 +231,7 @@ partial class OcrImplementation : IOcrService
                 }
                 else
                 {
-                    throw new ArgumentException($"Unsupported language \"{options.Language}\". Supported languages are: ({string.Join(",", supportedLangList)})", nameof(options.Language));
+                    throw new NotSupportedException($"Unsupported language \"{options.Language}\". Supported languages are: ({string.Join(",", supportedLangList)})");
                 }
             }
 
