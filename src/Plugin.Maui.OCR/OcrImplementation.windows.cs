@@ -6,7 +6,7 @@ using static Plugin.Maui.OCR.OcrResult;
 
 namespace Plugin.Maui.OCR;
 
-partial class OcrImplementation : IOcrService
+class OcrImplementation : IOcrService
 {
     private IReadOnlyCollection<string> _supportedLanguages;
     public IReadOnlyCollection<string> SupportedLanguages => _supportedLanguages;

@@ -12,7 +12,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Plugin.Maui.OCR;
 
-internal partial class OcrImplementation : IOcrService
+class OcrImplementation : IOcrService
 {
     public IReadOnlyCollection<string> SupportedLanguages => throw new NotImplementedException();
 
@@ -58,6 +58,15 @@ internal partial class OcrImplementation : IOcrService
         return Task.CompletedTask;
     }
 
+    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+    {
+        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
+        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
+        task.AddOnCompleteListener(taskCompleteListener);
+
+        return taskCompletionSource.Task;
+    }
+
     /// <summary>
     /// Takes an image and returns the text found in the image.
     /// </summary>
@@ -68,15 +77,6 @@ internal partial class OcrImplementation : IOcrService
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
     {
         return await RecognizeTextAsync(imageData, new OcrOptions(TryHard: tryHard), ct);
-    }
-
-    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
-    {
-        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
-        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
-        task.AddOnCompleteListener(taskCompleteListener);
-
-        return taskCompletionSource.Task;
     }
 
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
