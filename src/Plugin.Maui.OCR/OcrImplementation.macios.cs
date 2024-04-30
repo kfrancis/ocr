@@ -11,6 +11,8 @@ class OcrImplementation : IOcrService
     private bool _isInitialized;
     private IReadOnlyCollection<string> _supportedLanguages;
 
+    public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
     public IReadOnlyCollection<string> SupportedLanguages => _supportedLanguages;
 
     /// <summary>
@@ -260,5 +262,88 @@ class OcrImplementation : IOcrService
             langError = null;
             return Array.Empty<string>();
         }
+    }
+
+    public Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
+    {
+        if (!_isInitialized)
+        {
+            throw new InvalidOperationException($"{nameof(InitAsync)} must be called before {nameof(StartRecognizeTextAsync)}.");
+        }
+
+        ct.ThrowIfCancellationRequested();
+
+        try
+        {
+            using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+            var imageSize = image.Size;
+
+            using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
+            {
+                if (error != null)
+                {
+                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, error.LocalizedDescription));
+                    return;
+                }
+
+                if (ct.IsCancellationRequested)
+                {
+                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, "Operation was cancelled."));
+                    return;
+                }
+
+                try
+                {
+                    var result = ProcessRecognitionResults(request, imageSize);
+                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
+                }
+                catch (Exception ex)
+                {
+                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, ex.Message));
+                }
+            });
+
+            // Set the recognition level based on options.TryHard
+            recognizeTextRequest.RecognitionLevel = options.TryHard ? VNRequestTextRecognitionLevel.Accurate : VNRequestTextRecognitionLevel.Fast;
+
+            // Handle language options
+            if (!string.IsNullOrEmpty(options.Language))
+            {
+                var supportedLangs = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
+                if (langError != null)
+                {
+                    throw new InvalidOperationException(langError.LocalizedDescription);
+                }
+                var supportedLangList = new List<string>(supportedLangs.Select(ns => ns));
+
+                if (supportedLangList.Contains(options.Language))
+                {
+                    recognizeTextRequest.RecognitionLanguages = new[] { options.Language };
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported language \"{options.Language}\". Supported languages are: {string.Join(", ", supportedLangList)}");
+                }
+            }
+
+            // Set other recognition options
+            recognizeTextRequest.UsesLanguageCorrection = options.TryHard;
+            recognizeTextRequest.UsesCpuOnly = false;
+            recognizeTextRequest.PreferBackgroundProcessing = true;
+            recognizeTextRequest.MinimumTextHeight = 0;
+
+            using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
+            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var handlerError);
+            if (handlerError != null)
+            {
+                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, handlerError.LocalizedDescription));
+            }
+        }
+        catch (Exception ex)
+        {
+            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, ex.Message));
+        }
+
+        return Task.CompletedTask;
     }
 }

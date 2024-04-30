@@ -44,7 +44,7 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.OCR` or `dotnet add
 
 | Platform | Minimum Version Supported |
 |----------|---------------------------|
-| iOS      | 11+                       |
+| iOS      | 13+                       |
 | macOS    | 10.15+                    |
 | Android  | 5.0 (API 21)              |
 | Windows  | 11 and 10 version 1809+   |
@@ -206,21 +206,33 @@ Once you have the `OCR` instance, you can interact with it in the following ways
 
 #### Events
 
+##### `RecognitionCompleted`
 
+This event is fired when the OCR service has completed recognizing text from an image. The event args contain the `OcrResult` object. Only fires if the `StartRecognizeTextAsync` method is called.
 
 #### Properties
 
+##### `SupportedLanguages`
 
+A list of supported languages for the OCR service. This is populated after calling `InitAsync`. Allows you to know what language codes are able to be used in OcrOptions.
 
 #### Methods
 
 ##### `InitAsync(CancellationToken ct = default)`
 
-Initialize the feature. Might get removed, most platforms (if not all) don't currently require any addition initialization.
+Initialize the feature. If supported on the platform (like iOS), SupportedLanguages will be populated with the available languages.
 
 ##### `RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)`
 
 Recognize text from an image. Specify "tryHard" if you want to tell the platform API to do a better job (fast vs accurate, and use language correction (ios/mac)) though it seems very accurate normally.
+
+##### `RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)`
+
+Recognize text from an image. OcrOptions contains options for the OCR service, including the language to use and whether to try hard.
+
+##### `Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)`
+
+Start recognizing text from an image. This is a task that will fire the `RecognitionCompleted` event when it completes with the result.
 
 # Acknowledgements
 

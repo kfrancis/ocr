@@ -12,8 +12,10 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Plugin.Maui.OCR;
 
-class OcrImplementation : IOcrService
+internal class OcrImplementation : IOcrService
 {
+    public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
     public IReadOnlyCollection<string> SupportedLanguages => throw new NotImplementedException();
 
     public static OcrResult ProcessOcrResult(Java.Lang.Object result)
@@ -56,15 +58,6 @@ class OcrImplementation : IOcrService
         // but you can perform any necessary setup here.
 
         return Task.CompletedTask;
-    }
-
-    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
-    {
-        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
-        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
-        task.AddOnCompleteListener(taskCompleteListener);
-
-        return taskCompletionSource.Task;
     }
 
     /// <summary>
@@ -132,6 +125,71 @@ class OcrImplementation : IOcrService
         {
             throw new InvalidOperationException("OCR operation failed without an exception.");
         }
+    }
+
+    public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
+    {
+        var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
+        using var inputImage = InputImage.FromBitmap(image, 0);
+
+        MlKitException? lastException = null;
+        const int MaxRetries = 5;
+
+        for (var retry = 0; retry < MaxRetries; retry++)
+        {
+            ITextRecognizer? textScanner = null;
+
+            try
+            {
+                if (options.TryHard)
+                {
+                    // For more accurate results, use the cloud-based recognizer (requires internet).
+                    textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
+                        .SetExecutor(Executors.NewFixedThreadPool(1))
+                        .Build());
+                }
+                else
+                {
+                    // Use the default on-device recognizer for faster results.
+                    textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+                }
+
+                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
+                var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
+            }
+            catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
+            {
+                // If the specific exception is caught, log it and wait before retrying
+                lastException = ex;
+                Debug.WriteLine($"OCR model is not ready. Waiting before retrying... Attempt {retry + 1}/{MaxRetries}");
+                await Task.Delay(5000, ct);
+            }
+            finally
+            {
+                textScanner?.Dispose();
+                textScanner = null;
+            }
+        }
+
+        // If all retries have failed, throw the last exception
+        if (lastException != null)
+        {
+            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, lastException.Message));
+        }
+        else
+        {
+            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, "OCR operation failed without an exception."));
+        }
+    }
+
+    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+    {
+        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
+        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
+        task.AddOnCompleteListener(taskCompleteListener);
+
+        return taskCompletionSource.Task;
     }
 
     public class OnFailureListener : Java.Lang.Object, IOnFailureListener

@@ -6,26 +6,50 @@
     Title="OCR Plugin">
     <StackLayout Padding="20" Spacing="10">
         <HorizontalStackLayout HorizontalOptions="Center">
-            <Switch x:Name="TryHardSwitch" IsToggled="False" Margin="0,0,10,0" />
+            <Switch
+                x:Name="TryHardSwitch"
+                Margin="0,0,10,0"
+                IsToggled="False" />
             <Label Text="Try Hard?" VerticalOptions="Center" />
         </HorizontalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+            <Button
+                x:Name="OpenFromCameraBtn"
+                Clicked="OpenFromCameraBtn_Clicked"
+                MaximumHeightRequest="100"
+                MaximumWidthRequest="200"
+                Text="From Camera .." />
+            <Button
+                x:Name="OpenFromCameraUseEventBtn"
+                Clicked="OpenFromCameraUseEventBtn_Clicked"
+                MaximumHeightRequest="100"
+                MaximumWidthRequest="200"
+                Text="From Camera (Use Event) .." />
+        </HorizontalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+            <Button
+                x:Name="OpenFromFileBtn"
+                Clicked="OpenFromFileBtn_Clicked"
+                MaximumHeightRequest="100"
+                MaximumWidthRequest="200"
+                Text="From File .." />
+            <Button
+                x:Name="OpenFromFileUseEventBtn"
+                Clicked="OpenFromFileUseEventBtn_Clicked"
+                MaximumHeightRequest="100"
+                MaximumWidthRequest="200"
+                Text="From File (Use Event) .." />
+        </HorizontalStackLayout>
+        <Label
+            x:Name="ResultLbl"
+            BackgroundColor="{StaticResource White}"
+            HorizontalOptions="Center"
+            MinimumHeightRequest="200"
+            Text="Waiting for results .." />
         <Button
-            x:Name="OpenFromCameraBtn"
-            MaximumHeightRequest="100"
-            MaximumWidthRequest="200"
-            Clicked="OpenFromCameraBtn_Clicked"
-            Text="From Camera .." />
-        <Button
-            x:Name="OpenFromFileBtn"
-            MaximumHeightRequest="100"
-            MaximumWidthRequest="200"
-            Clicked="OpenFromFileBtn_Clicked"
-            Text="From File .." />
-        <Label x:Name="ResultLbl" Text="Waiting for results .." HorizontalOptions="Center" MinimumHeightRequest="200" BackgroundColor="{StaticResource White}" />
-        <Button
-            IsEnabled="False"
             x:Name="ClearBtn"
             Clicked="ClearBtn_Clicked"
+            IsEnabled="False"
             MaximumHeightRequest="100"
             MaximumWidthRequest="200"
             Text="Clear Result" />

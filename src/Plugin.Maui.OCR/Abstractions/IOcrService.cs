@@ -6,6 +6,11 @@ namespace Plugin.Maui.OCR;
 public interface IOcrService
 {
     /// <summary>
+    /// Event triggered when OCR recognition is completed.
+    /// </summary>
+    event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
+    /// <summary>
     /// BCP-47 language codes supported by the OCR service.
     /// </summary>
     IReadOnlyCollection<string> SupportedLanguages { get; }
@@ -37,6 +42,17 @@ public interface IOcrService
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentException"></exception>
     Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
+
+    /// <summary>
+    /// Takes an image, starts the OCR process and triggers the RecognitionCompleted event when completed.
+    /// </summary>
+    /// <param name="imageData">The image data</param>
+    /// <param name="options">The options for OCR</param>
+    /// <param name="ct">An optional cancellation token</param>
+    /// <returns>The OCR result</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -45,6 +61,33 @@ public interface IOcrService
 /// <param name="Language">The BCP-47 language code</param>
 /// <param name="TryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
 public record OcrOptions(string? Language = null, bool TryHard = false);
+
+/// <summary>
+/// Provides data for the RecognitionCompleted event.
+/// </summary>
+public class OcrCompletedEventArgs : EventArgs
+{
+    public OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null)
+    {
+        Result = result;
+        ErrorMessage = errorMessage ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Any error message if the OCR operation failed, or empty string otherwise.
+    /// </summary>
+    public string ErrorMessage { get; }
+
+    /// <summary>
+    /// Indicates whether the OCR operation was successful.
+    /// </summary>
+    public bool IsSuccessful => Result?.Success ?? false;
+
+    /// <summary>
+    /// The result of the OCR operation.
+    /// </summary>
+    public OcrResult? Result { get; }
+}
 
 /// <summary>
 /// The result of an OCR operation.
