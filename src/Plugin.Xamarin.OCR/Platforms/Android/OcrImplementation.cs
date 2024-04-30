@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Android.Gms.Tasks;
@@ -16,6 +17,10 @@ namespace Plugin.Xamarin.OCR
 {
     public class OcrImplementation : IOcrService
     {
+        public IReadOnlyCollection<string> SupportedLanguages => throw new NotImplementedException();
+
+        public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
         public static OcrResult ProcessOcrResult(Java.Lang.Object result)
         {
             var ocrResult = new OcrResult();
@@ -67,6 +72,20 @@ namespace Plugin.Xamarin.OCR
         /// <returns>The OCR result</returns>
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
         {
+            return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard), ct);
+        }
+
+        private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+        {
+            var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
+            var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
+            task.AddOnCompleteListener(taskCompleteListener);
+
+            return taskCompletionSource.Task;
+        }
+
+        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
+        {
             var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
             using var inputImage = InputImage.FromBitmap(image, 0);
 
@@ -79,7 +98,7 @@ namespace Plugin.Xamarin.OCR
 
                 try
                 {
-                    if (tryHard)
+                    if (options.TryHard)
                     {
                         // For more accurate results, use the cloud-based recognizer (requires internet).
                         textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
@@ -120,13 +139,60 @@ namespace Plugin.Xamarin.OCR
             }
         }
 
-        private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+        public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
         {
-            var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
-            var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
-            task.AddOnCompleteListener(taskCompleteListener);
+            var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
+            using var inputImage = InputImage.FromBitmap(image, 0);
 
-            return taskCompletionSource.Task;
+            MlKitException? lastException = null;
+            const int MaxRetries = 5;
+
+            for (var retry = 0; retry < MaxRetries; retry++)
+            {
+                ITextRecognizer? textScanner = null;
+
+                try
+                {
+                    if (options.TryHard)
+                    {
+                        // For more accurate results, use the cloud-based recognizer (requires internet).
+                        textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
+                            .SetExecutor(Executors.NewFixedThreadPool(1))
+                            .Build());
+                    }
+                    else
+                    {
+                        // Use the default on-device recognizer for faster results.
+                        textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+                    }
+
+                    // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
+                    var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
+                }
+                catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
+                {
+                    // If the specific exception is caught, log it and wait before retrying
+                    lastException = ex;
+                    Debug.WriteLine($"OCR model is not ready. Waiting before retrying... Attempt {retry + 1}/{MaxRetries}");
+                    await Task.Delay(5000, ct);
+                }
+                finally
+                {
+                    textScanner?.Dispose();
+                    textScanner = null;
+                }
+            }
+
+            // If all retries have failed, throw the last exception
+            if (lastException != null)
+            {
+                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, lastException.Message));
+            }
+            else
+            {
+                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, "OCR operation failed without an exception."));
+            }
         }
 
         public class OnFailureListener : Java.Lang.Object, IOnFailureListener

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +13,19 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
 {
     internal class OcrImplementation : IOcrService
     {
+        private IReadOnlyCollection<string> _supportedLanguages;
+        public IReadOnlyCollection<string> SupportedLanguages => _supportedLanguages;
+
+        public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
         /// <summary>
         /// Initialize the OCR on the platform
         /// </summary>
         /// <param name="ct">An optional cancellation token</param>
         public Task InitAsync(CancellationToken ct = default)
         {
-            // Windows OCR doesn't require explicit initialization.
+            _supportedLanguages = OcrEngine.AvailableRecognizerLanguages.Select(x => x.LanguageTag).ToList().AsReadOnly();
+
             return Task.CompletedTask;
         }
 
@@ -31,6 +38,16 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
         /// <returns>The OCR result</returns>
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
         {
+            return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard), ct);
+        }
+
+        public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
+        {
+            if (!string.IsNullOrEmpty(options.Language) && !OcrEngine.IsLanguageSupported(new Windows.Globalization.Language(options.Language)))
+            {
+                throw new NotSupportedException($"Unsupported language \"{options.Language}\". Supported languages are: ({string.Join(",", OcrEngine.AvailableRecognizerLanguages.Select(x => x.LanguageTag))})");
+            }
+
             var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new NotSupportedException("OCR not supported on this device or no languages are installed.");
 
             using var stream = new InMemoryRandomAccessStream();
@@ -67,6 +84,51 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
             }
 
             return result;
+        }
+
+        public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
+        {
+            if (!string.IsNullOrEmpty(options.Language) && !OcrEngine.IsLanguageSupported(new Windows.Globalization.Language(options.Language)))
+            {
+                throw new NotSupportedException($"Unsupported language \"{options.Language}\". Supported languages are: ({string.Join(",", OcrEngine.AvailableRecognizerLanguages.Select(x => x.LanguageTag))})");
+            }
+
+            var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new NotSupportedException("OCR not supported on this device or no languages are installed.");
+
+            using var stream = new InMemoryRandomAccessStream();
+            await stream.WriteAsync(imageData.AsBuffer());
+            stream.Seek(0);
+
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+            var softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+
+            var ocrResult = await ocrEngine.RecognizeAsync(softwareBitmap);
+
+            var result = new OcrResult
+            {
+                AllText = ocrResult.Text,
+                Success = true,
+                Elements = new List<OcrElement>(),
+                Lines = new List<string>()
+            };
+
+            foreach (var line in ocrResult.Lines)
+            {
+                result.Lines.Add(line.Text);
+                foreach (var word in line.Words)
+                {
+                    result.Elements.Add(new OcrElement
+                    {
+                        Text = word.Text,
+                        X = (int)Math.Truncate(word.BoundingRect.X),
+                        Y = (int)Math.Truncate(word.BoundingRect.Y),
+                        Width = (int)Math.Truncate(word.BoundingRect.Width),
+                        Height = (int)Math.Truncate(word.BoundingRect.Height)
+                    });
+                }
+            }
+
+            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
         }
     }
 }

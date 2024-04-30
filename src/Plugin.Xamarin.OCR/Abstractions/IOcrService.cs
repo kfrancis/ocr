@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,16 @@ namespace Plugin.Xamarin.OCR;
 /// </summary>
 public interface IOcrService
 {
+    /// <summary>
+    /// Event triggered when OCR recognition is completed.
+    /// </summary>
+    event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
+    /// <summary>
+    /// BCP-47 language codes supported by the OCR service.
+    /// </summary>
+    IReadOnlyCollection<string> SupportedLanguages { get; }
+
     /// <summary>
     /// Initialize the OCR on the platform
     /// </summary>
@@ -23,6 +34,75 @@ public interface IOcrService
     /// <param name="ct">An optional cancellation token</param>
     /// <returns>The OCR result</returns>
     Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default);
+
+    /// <summary>
+    /// Takes an image and returns the text found in the image.
+    /// </summary>
+    /// <param name="imageData">The image data</param>
+    /// <param name="options">The options for OCR</param>
+    /// <param name="ct">An optional cancellation token</param>
+    /// <returns>The OCR result</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
+
+    /// <summary>
+    /// Takes an image, starts the OCR process and triggers the RecognitionCompleted event when completed.
+    /// </summary>
+    /// <param name="imageData">The image data</param>
+    /// <param name="options">The options for OCR</param>
+    /// <param name="ct">An optional cancellation token</param>
+    /// <returns>The OCR result</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
+}
+
+/// <summary>
+/// The options for OCR.
+/// </summary>
+public class OcrOptions
+{
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="language">The BCP-47 language code</param>
+    /// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
+    public OcrOptions(string? language = null, bool tryHard = false)
+    {
+        Language = language;
+        TryHard = tryHard;
+    }
+
+    public string? Language { get; }
+    public bool TryHard { get; }
+}
+
+/// <summary>
+/// Provides data for the RecognitionCompleted event.
+/// </summary>
+public class OcrCompletedEventArgs : EventArgs
+{
+    public OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null)
+    {
+        Result = result;
+        ErrorMessage = errorMessage ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Any error message if the OCR operation failed, or empty string otherwise.
+    /// </summary>
+    public string ErrorMessage { get; }
+
+    /// <summary>
+    /// Indicates whether the OCR operation was successful.
+    /// </summary>
+    public bool IsSuccessful => Result?.Success ?? false;
+
+    /// <summary>
+    /// The result of the OCR operation.
+    /// </summary>
+    public OcrResult? Result { get; }
 }
 
 /// <summary>
