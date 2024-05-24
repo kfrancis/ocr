@@ -71,7 +71,13 @@ jobs:
       run: dotnet build ${{ matrix.project }} -c ${{ env.BUILD_CONFIGURATION }}
 
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
-    - run: dotnet pack ${{ matrix.project }} --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+    - name: Pack Xamarin NuGet Package
+      if: contains(matrix.project, 'Plugin.Xamarin.OCR')
+      run: msbuild /t:Pack ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg
+
+    - name: Pack MAUI NuGet Package
+      if: contains(matrix.project, 'Plugin.Maui.OCR')
+      run: dotnet pack ${{ matrix.project }} --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
   
     # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
     - name: Prepare Artifacts
