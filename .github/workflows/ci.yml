@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - 'main'       # Run the workflow when pushing to the main branch
+    paths-ignore:
+      - "**.md"
   pull_request:
     branches:
       - '*'          # Run the workflow for all pull requests
@@ -16,6 +18,7 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
+  BUILD_CONFIGURATION: Release
   NuGetDirectory: ${{ github.workspace}}/nuget
 
 defaults:
@@ -24,7 +27,7 @@ defaults:
 
 jobs:
   create_nuget:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       matrix:
         project:
@@ -36,12 +39,39 @@ jobs:
       with:
         fetch-depth: 0 # Get all history to allow versioning using MinVer
 
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v2
+      with:
+        vs-version: 'latest'
+
     # Install the .NET SDK indicated in the global.json file
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
 
+    - name: Install MAUI workloads (only for MAUI project)
+      if: contains(matrix.project, 'Plugin.Maui.OCR')
+      run: dotnet workload restore ${{ matrix.project }}
+
+    - name: Restore NuGet packages for Xamarin
+      if: contains(matrix.project, 'Plugin.Xamarin.OCR')
+      run: msbuild /t:Restore ${{ matrix.project }} -maxcpucount
+
+    - name: Build Xamarin
+      if: contains(matrix.project, 'Plugin.Xamarin.OCR')
+      run: msbuild /m /t:Build ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:RestorePackages=false -maxcpucount
+
+    - name: Build MAUI
+      if: contains(matrix.project, 'Plugin.Maui.OCR')
+      run: dotnet build ${{ matrix.project }} -c ${{ env.BUILD_CONFIGURATION }}
+
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
-    - run: dotnet pack ${{ matrix.project }} --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+    - run: dotnet pack ${{ matrix.project }} --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
   
     # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
     - name: Prepare Artifacts
@@ -61,7 +91,7 @@ jobs:
           ${{ env.NuGetDirectory }}/artifacts/*.snupkg
 
   validate_nuget:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [ create_nuget ]
     steps:
       # Install the .NET SDK indicated in the global.json file
@@ -85,7 +115,7 @@ jobs:
         run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
 
   run_test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -98,7 +128,7 @@ jobs:
     # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
     # You can update this logic if you want to manage releases differently
     if: github.event_name == 'release'
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [ validate_nuget, run_test ]
     steps:
       # Download the NuGet package created in the previous job
