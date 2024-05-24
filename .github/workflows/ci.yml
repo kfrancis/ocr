@@ -73,7 +73,7 @@ jobs:
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
     - name: Pack Xamarin NuGet Package
       if: contains(matrix.project, 'Plugin.Xamarin.OCR')
-      run: msbuild /t:Pack ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg
+      run: msbuild -t:Pack ${{ matrix.project }} -p:NoBuild=true -p:Configuration=${{ env.BUILD_CONFIGURATION }} -p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg
 
     - name: Pack MAUI NuGet Package
       if: contains(matrix.project, 'Plugin.Maui.OCR')
