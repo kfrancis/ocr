@@ -25,6 +25,12 @@ defaults:
 jobs:
   create_nuget:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project:
+          - src/Plugin.Xamarin.OCR/Plugin.Xamarin/OCR.csproj
+          - src/Plugin.Maui.OCR/Plugin.Maui.OCR.csproj
+  
     steps:
     - uses: actions/checkout@v3
       with:
@@ -35,7 +41,7 @@ jobs:
       uses: actions/setup-dotnet@v4
 
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
-    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+    - run: dotnet pack ${{ matrix.project }} --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
   
     # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
     - name: Prepare Artifacts
