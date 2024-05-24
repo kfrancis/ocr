@@ -74,8 +74,8 @@ internal class OcrImplementation : IOcrService
 
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
     {
-        var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
-        using var inputImage = InputImage.FromBitmap(image, 0);
+        using var srcBitmap = await BitmapFactory.DecodeByteArrayAsync(imageData, 0, imageData.Length);
+        using var srcImage = InputImage.FromBitmap(srcBitmap, 0);
 
         MlKitException? lastException = null;
         const int MaxRetries = 5;
@@ -100,7 +100,9 @@ internal class OcrImplementation : IOcrService
                 }
 
                 // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
-                return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+                var processImageTask = ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener()));
+                var result = await processImageTask;
+                return ProcessOcrResult(result);
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
             {
@@ -129,8 +131,8 @@ internal class OcrImplementation : IOcrService
 
     public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
     {
-        var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
-        using var inputImage = InputImage.FromBitmap(image, 0);
+        using var srcBitmap = await BitmapFactory.DecodeByteArrayAsync(imageData, 0, imageData.Length);
+        using var srcImage = InputImage.FromBitmap(srcBitmap, 0);
 
         MlKitException? lastException = null;
         const int MaxRetries = 5;
@@ -155,7 +157,7 @@ internal class OcrImplementation : IOcrService
                 }
 
                 // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
-                var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+                var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
                 RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))

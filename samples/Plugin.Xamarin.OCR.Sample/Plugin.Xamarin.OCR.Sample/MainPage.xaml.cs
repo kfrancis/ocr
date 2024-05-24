@@ -150,10 +150,10 @@ namespace Plugin.Xamarin.OCR.Sample
             SelectedImage.SizeChanged -= OnSelectedImageSizeChanged;
 
             // Get the scale factors based on the actual image and its displayed size
-            var scaleFactors = GetScaleFactors(_actualWidth, _actualHeight, SelectedImage.Width, SelectedImage.Height);
+            var (scaleX, scaleY) = GetScaleFactors(_actualWidth, _actualHeight, SelectedImage.Width, SelectedImage.Height);
 
             // Draw the bounding boxes using the calculated scale factors
-            DrawBoundingBoxes(_ocrResult, scaleFactors.scaleX, scaleFactors.scaleY);
+            DrawBoundingBoxes(_ocrResult, scaleX, scaleY);
         }
 
         private (double scaleX, double scaleY) GetScaleFactors(int actualWidth, int actualHeight, double displayedWidth, double displayedHeight)

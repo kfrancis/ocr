@@ -1,40 +1,115 @@
-name: Build for CI
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
+name: publish
 on:
+  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
   push:
-    branches: [ "main" ]
-    paths-ignore:
-      - "**.md"
+    branches:
+      - 'main'       # Run the workflow when pushing to the main branch
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - '*'          # Run the workflow for all pull requests
+  release:
+    types:
+      - published    # Run the workflow when a new GitHub release is published
 
 env:
-  BUILD_CONFIGURATION: Release
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
-  build-plugin-ci:
-
-    runs-on: windows-latest
-
+  create_nuget:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
+    - uses: actions/checkout@v3
       with:
-        java-version: '11'
-        distribution: 'adopt'
+        fetch-depth: 0 # Get all history to allow versioning using MinVer
 
-    - name: Setup MSBuild path
-      uses: microsoft/setup-msbuild@v2
+    # Install the .NET SDK indicated in the global.json file
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+
+    # Create the NuGet package in the folder from the environment variable NuGetDirectory
+    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+  
+    # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
+    - name: Prepare Artifacts
+      run: |
+        mkdir -p ${{ env.NuGetDirectory }}/artifacts
+        cp ${{ env.NuGetDirectory }}/*.nupkg ${{ env.NuGetDirectory }}/artifacts
+        cp ${{ env.NuGetDirectory }}/*.snupkg ${{ env.NuGetDirectory }}/artifacts
+
+    # Publish the NuGet package as an artifact, so they can be used in the following jobs
+    - uses: actions/upload-artifact@v3
       with:
-        vs-version: 'latest'
+        name: nuget
+        if-no-files-found: error
+        retention-days: 7
+        path: |
+          ${{ env.NuGetDirectory }}/artifacts/*.nupkg
+          ${{ env.NuGetDirectory }}/artifacts/*.snupkg
 
-    - name: Build Maui
-      run: dotnet build src\Plugin.Maui.OCR.sln -c ${{env.BUILD_CONFIGURATION}}
+  validate_nuget:
+    runs-on: ubuntu-latest
+    needs: [ create_nuget ]
+    steps:
+      # Install the .NET SDK indicated in the global.json file
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
 
-    - name: Restore NuGet packages
-      run: msbuild /t:Restore src\Plugin.Xamarin.OCR.sln -maxcpucount
+      # Download the NuGet package created in the previous job
+      - uses: actions/download-artifact@v3
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
 
-    - name: Build Xamarin
-      run: msbuild /m /t:Build src\Plugin.Xamarin.OCR.sln /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:RestorePackages=false -maxcpucount
+      - name: Install nuget validator
+        run: dotnet tool update Meziantou.Framework.NuGetPackageValidation.Tool --global
+
+      # Validate metadata and content of the NuGet package
+      # https://www.nuget.org/packages/Meziantou.Framework.NuGetPackageValidation.Tool#readme-body-tab
+      # If some rules are not applicable, you can disable them
+      # using the --excluded-rules or --excluded-rule-ids option
+      - name: Validate package
+        run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
+
+  run_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Run tests
+      run: dotnet test --configuration Release --filter 'FullyQualifiedName!~TestBase'
+
+  deploy:
+    # Publish only when creating a GitHub Release
+    # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+    # You can update this logic if you want to manage releases differently
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs: [ validate_nuget, run_test ]
+    steps:
+      # Download the NuGet package created in the previous job
+      - uses: actions/download-artifact@v3
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      # Install the .NET SDK indicated in the global.json file
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+
+      # Publish all NuGet packages to NuGet.org
+      # Use --skip-duplicate to prevent errors if a package with the same version already exists.
+      # If you retry a failed workflow, already published packages will be skipped without error.
+      - name: Publish NuGet package
+        run: |
+          foreach($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
+              dotnet nuget push $file --api-key "${{ secrets.NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }

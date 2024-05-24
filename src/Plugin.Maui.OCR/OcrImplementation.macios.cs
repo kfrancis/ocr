@@ -1,5 +1,6 @@
 using CoreGraphics;
 using Foundation;
+using ImageIO;
 using UIKit;
 using Vision;
 
@@ -171,10 +172,39 @@ class OcrImplementation : IOcrService
         var tcs = new TaskCompletionSource<OcrResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         ct.Register(() => tcs.TrySetCanceled());
 
+        VNImageRequestHandler? ocrHandler = null;
         try
         {
-            using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
-            var imageSize = image.Size;
+            using var srcImage = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+            var imageSize = srcImage.Size;
+            CGImagePropertyOrientation? imageOrientation = null;
+            switch (srcImage.Orientation)
+            {
+                case UIImageOrientation.Up:
+                    imageOrientation = CGImagePropertyOrientation.Up;
+                    break;
+                case UIImageOrientation.Down:
+                    imageOrientation = CGImagePropertyOrientation.Down;
+                    break;
+                case UIImageOrientation.Left:
+                    imageOrientation = CGImagePropertyOrientation.Left;
+                    break;
+                case UIImageOrientation.Right:
+                    imageOrientation = CGImagePropertyOrientation.Right;
+                    break;
+                case UIImageOrientation.UpMirrored:
+                    imageOrientation = CGImagePropertyOrientation.UpMirrored;
+                    break;
+                case UIImageOrientation.DownMirrored:
+                    imageOrientation = CGImagePropertyOrientation.DownMirrored;
+                    break;
+                case UIImageOrientation.LeftMirrored:
+                    imageOrientation = CGImagePropertyOrientation.LeftMirrored;
+                    break;
+                case UIImageOrientation.RightMirrored:
+                    imageOrientation = CGImagePropertyOrientation.RightMirrored;
+                    break;
+            }
 
             using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
             {
@@ -229,8 +259,19 @@ class OcrImplementation : IOcrService
             recognizeTextRequest.PreferBackgroundProcessing = true;
             recognizeTextRequest.MinimumTextHeight = 0;
 
-            using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
-            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
+            NSError? error = null;
+
+            if (imageOrientation != null)
+            {
+                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary());
+                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out error);
+            }
+            else
+            {
+                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
+                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out error);
+            }
+
             if (error != null)
             {
                 throw new InvalidOperationException(error.LocalizedDescription);
@@ -239,6 +280,11 @@ class OcrImplementation : IOcrService
         catch (Exception ex)
         {
             tcs.TrySetException(ex);
+        }
+        finally
+        {
+            ocrHandler?.Dispose();
+            ocrHandler = null;
         }
 
         return await tcs.Task;
@@ -273,10 +319,40 @@ class OcrImplementation : IOcrService
 
         ct.ThrowIfCancellationRequested();
 
+        VNImageRequestHandler? ocrHandler = null;
+
         try
         {
-            using var image = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
-            var imageSize = image.Size;
+            using var srcImage = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
+            var imageSize = srcImage.Size;
+            CGImagePropertyOrientation? imageOrientation = null;
+            switch (srcImage.Orientation)
+            {
+                case UIImageOrientation.Up:
+                    imageOrientation = CGImagePropertyOrientation.Up;
+                    break;
+                case UIImageOrientation.Down:
+                    imageOrientation = CGImagePropertyOrientation.Down;
+                    break;
+                case UIImageOrientation.Left:
+                    imageOrientation = CGImagePropertyOrientation.Left;
+                    break;
+                case UIImageOrientation.Right:
+                    imageOrientation = CGImagePropertyOrientation.Right;
+                    break;
+                case UIImageOrientation.UpMirrored:
+                    imageOrientation = CGImagePropertyOrientation.UpMirrored;
+                    break;
+                case UIImageOrientation.DownMirrored:
+                    imageOrientation = CGImagePropertyOrientation.DownMirrored;
+                    break;
+                case UIImageOrientation.LeftMirrored:
+                    imageOrientation = CGImagePropertyOrientation.LeftMirrored;
+                    break;
+                case UIImageOrientation.RightMirrored:
+                    imageOrientation = CGImagePropertyOrientation.RightMirrored;
+                    break;
+            }
 
             using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
             {
@@ -332,8 +408,19 @@ class OcrImplementation : IOcrService
             recognizeTextRequest.PreferBackgroundProcessing = true;
             recognizeTextRequest.MinimumTextHeight = 0;
 
-            using var ocrHandler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
-            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var handlerError);
+            NSError? handlerError = null;
+
+            if (imageOrientation != null)
+            {
+                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary());
+                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out handlerError);
+            }
+            else
+            {
+                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
+                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out handlerError);
+            }
+
             if (handlerError != null)
             {
                 RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, handlerError.LocalizedDescription));

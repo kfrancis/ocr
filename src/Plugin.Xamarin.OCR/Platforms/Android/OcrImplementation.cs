@@ -75,18 +75,9 @@ namespace Plugin.Xamarin.OCR
             return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard), ct);
         }
 
-        private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
-        {
-            var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
-            var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
-            task.AddOnCompleteListener(taskCompleteListener);
-
-            return taskCompletionSource.Task;
-        }
-
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
         {
-            var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
+            using var image = await BitmapFactory.DecodeByteArrayAsync(imageData, 0, imageData.Length);
             using var inputImage = InputImage.FromBitmap(image, 0);
 
             MlKitException? lastException = null;
@@ -112,7 +103,9 @@ namespace Plugin.Xamarin.OCR
                     }
 
                     // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
-                    return ProcessOcrResult(await ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+                    var processImageTask = ToAwaitableTask(textScanner.Process(inputImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener()));
+                    var result = await processImageTask;
+                    return ProcessOcrResult(result);
                 }
                 catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
                 {
@@ -129,9 +122,9 @@ namespace Plugin.Xamarin.OCR
             }
 
             // If all retries have failed, throw the last exception
-            if (lastException != null)
+            if (lastException == null)
             {
-                throw lastException;
+                throw lastException!;
             }
             else
             {
@@ -139,9 +132,18 @@ namespace Plugin.Xamarin.OCR
             }
         }
 
+        private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+        {
+            var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
+            var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
+            task.AddOnCompleteListener(taskCompleteListener);
+
+            return taskCompletionSource.Task;
+        }
+
         public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
         {
-            var image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
+            using var image = await BitmapFactory.DecodeByteArrayAsync(imageData, 0, imageData.Length);
             using var inputImage = InputImage.FromBitmap(image, 0);
 
             MlKitException? lastException = null;

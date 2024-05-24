@@ -59,40 +59,14 @@ public interface IOcrService
 }
 
 /// <summary>
-/// The options for OCR.
-/// </summary>
-public class OcrOptions
-{
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="language">The BCP-47 language code</param>
-    /// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
-    public OcrOptions(string? language = null, bool tryHard = false)
-    {
-        Language = language;
-        TryHard = tryHard;
-    }
-
-    public string? Language { get; }
-    public bool TryHard { get; }
-}
-
-/// <summary>
 /// Provides data for the RecognitionCompleted event.
 /// </summary>
-public class OcrCompletedEventArgs : EventArgs
+public class OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null) : EventArgs
 {
-    public OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null)
-    {
-        Result = result;
-        ErrorMessage = errorMessage ?? string.Empty;
-    }
-
     /// <summary>
     /// Any error message if the OCR operation failed, or empty string otherwise.
     /// </summary>
-    public string ErrorMessage { get; }
+    public string ErrorMessage { get; } = errorMessage ?? string.Empty;
 
     /// <summary>
     /// Indicates whether the OCR operation was successful.
@@ -102,7 +76,21 @@ public class OcrCompletedEventArgs : EventArgs
     /// <summary>
     /// The result of the OCR operation.
     /// </summary>
-    public OcrResult? Result { get; }
+    public OcrResult? Result { get; } = result;
+}
+
+/// <summary>
+/// The options for OCR.
+/// </summary>
+/// <remarks>
+/// Constructor
+/// </remarks>
+/// <param name="language">The BCP-47 language code</param>
+/// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
+public class OcrOptions(string? language = null, bool tryHard = false)
+{
+    public string? Language { get; } = language;
+    public bool TryHard { get; } = tryHard;
 }
 
 /// <summary>
@@ -141,9 +129,19 @@ public class OcrResult
         public float Confidence { get; set; }
 
         /// <summary>
+        /// The height of the element.
+        /// </summary>
+        public int Height { get; set; }
+
+        /// <summary>
         /// The text of the element.
         /// </summary>
         public string Text { get; set; }
+
+        /// <summary>
+        /// The width of the element.
+        /// </summary>
+        public int Width { get; set; }
 
         /// <summary>
         /// The X coordinates of the element.
@@ -154,15 +152,5 @@ public class OcrResult
         /// The Y coordinates of the element.
         /// </summary>
         public int Y { get; set; }
-
-        /// <summary>
-        /// The height of the element.
-        /// </summary>
-        public int Height { get; set; }
-
-        /// <summary>
-        /// The width of the element.
-        /// </summary>
-        public int Width { get; set; }
     }
 }
