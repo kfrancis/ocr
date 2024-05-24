@@ -56,7 +56,7 @@ jobs:
 
     - name: Install MAUI workloads (only for MAUI project)
       if: contains(matrix.project, 'Plugin.Maui.OCR')
-      run: dotnet workload install maui-android maui-ios
+      run: dotnet workload install maui-android maui-ios maui-maccatalyst
 
     - name: Restore NuGet packages for Xamarin
       if: contains(matrix.project, 'Plugin.Xamarin.OCR')
