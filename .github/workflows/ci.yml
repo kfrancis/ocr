@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         project:
-          - src/Plugin.Xamarin.OCR/Plugin.Xamarin/OCR.csproj
+          - src/Plugin.Xamarin.OCR/Plugin.Xamarin.OCR.csproj
           - src/Plugin.Maui.OCR/Plugin.Maui.OCR.csproj
   
     steps:
