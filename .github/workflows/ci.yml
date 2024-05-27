@@ -62,11 +62,8 @@ jobs:
       id: minver
       run: |
         dotnet tool install --global minver-cli
-        minver > version.txt
-        $version = Get-Content version.txt
-        echo "##vso[task.setvariable variable=PACKAGE_VERSION]$version"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        $version = minver --auto-increment minor --build-metadata build
+        echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
 
     - name: Restore NuGet packages for Xamarin
       if: contains(matrix.project, 'Plugin.Xamarin.OCR')
