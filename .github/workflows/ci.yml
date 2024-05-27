@@ -58,21 +58,31 @@ jobs:
       if: contains(matrix.project, 'Plugin.Maui.OCR')
       run: dotnet workload install maui-android maui-ios maui-maccatalyst
 
+    - name: Determine Version
+      id: minver
+      run: |
+        dotnet tool install --global minver-cli
+        minver > version.txt
+        $version = Get-Content version.txt
+        echo "##vso[task.setvariable variable=PACKAGE_VERSION]$version"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Restore NuGet packages for Xamarin
       if: contains(matrix.project, 'Plugin.Xamarin.OCR')
       run: msbuild /t:Restore ${{ matrix.project }} -maxcpucount
 
     - name: Build Xamarin
       if: contains(matrix.project, 'Plugin.Xamarin.OCR')
-      run: msbuild /m /t:Build ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:GeneratePackageOnBuild=true /p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg /p:RestorePackages=false -maxcpucount
+      run: msbuild /m /t:Build ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:GeneratePackageOnBuild=true /p:PackageVersion=${{ env.PACKAGE_VERSION }} /p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg /p:RestorePackages=false -maxcpucount
 
     - name: Build MAUI
       if: contains(matrix.project, 'Plugin.Maui.OCR')
-      run: dotnet build ${{ matrix.project }} -c ${{ env.BUILD_CONFIGURATION }}
+      run: dotnet build ${{ matrix.project }} -c ${{ env.BUILD_CONFIGURATION }} -p:Version=${{ env.PACKAGE_VERSION }}
 
     - name: Pack MAUI NuGet Package
       if: contains(matrix.project, 'Plugin.Maui.OCR')
-      run: dotnet pack ${{ matrix.project }} --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+      run: dotnet pack ${{ matrix.project }} --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:Version=${{ env.PACKAGE_VERSION }}
   
     # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
     - name: Prepare Artifacts
