@@ -2,10 +2,6 @@
 	<PropertyGroup>
 		<IsPackageProject Condition="!$([System.String]::new('$(MSBuildProjectName)').Contains('Sample'))">true</IsPackageProject>
 		<IsPackageProject Condition="$([System.String]::new('$(MSBuildProjectName)').Contains('Sample'))">false</IsPackageProject>
-        <MinVerAutoIncrement>minor</MinVerAutoIncrement>
-        <MinVerBuildMetadata>build</MinVerBuildMetadata>
-        <MinVerTagPrefix>v</MinVerTagPrefix>
-        <MinVerVerbosity>normal</MinVerVerbosity>
 	</PropertyGroup>
 	<PropertyGroup Condition=" $(IsPackageProject) ">
 		<Copyright>Copyright (c) Kori Francis</Copyright>
@@ -29,6 +25,10 @@
 		<PackageDescription>Plugin which provides the ability to perform OCR on an image using platform API.</PackageDescription>
 		<Deterministic>true</Deterministic>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <MinVerAutoIncrement>minor</MinVerAutoIncrement>
+        <MinVerBuildMetadata>build</MinVerBuildMetadata>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+        <MinVerVerbosity>trace</MinVerVerbosity>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
