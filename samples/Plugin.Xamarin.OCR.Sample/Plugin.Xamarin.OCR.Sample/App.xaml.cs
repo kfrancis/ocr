@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -9,6 +9,8 @@ namespace Plugin.Xamarin.OCR.Sample
         public App()
         {
             InitializeComponent();
+
+            DependencyService.RegisterSingleton(OcrPlugin.Default);
 
             MainPage = new MainPage();
         }

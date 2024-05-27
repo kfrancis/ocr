@@ -9,16 +9,21 @@ namespace Plugin.Xamarin.OCR.Sample
 {
     public partial class MainPage : ContentPage
     {
-        private readonly IOcrService _ocr;
         private OcrResult _ocrResult;
         private int _actualWidth;
         private int _actualHeight;
 
-        public MainPage()
+        private readonly IOcrService _ocr;
+
+        public MainPage() : this(DependencyService.Get<IOcrService>())
+        {
+        }
+
+        public MainPage(IOcrService? ocr)
         {
             InitializeComponent();
 
-            _ocr = OcrPlugin.Default;
+            _ocr = ocr ?? OcrPlugin.Default;
         }
 
         protected override async void OnAppearing()

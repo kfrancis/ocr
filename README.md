@@ -99,7 +99,31 @@ private async Task<OcrResult> ProcessPhoto(FileResult photo)
 
 ## Xamarin Setup and Usage
 
-WIP
+For Xamarin, if you have some kind of DI framework in place then you can just register the `OcrPlugin` with it.
+
+```csharp
+public App()
+{
+    InitializeComponent();
+
+    DependencyService.RegisterSingleton(OcrPlugin.Default);
+
+    MainPage = new MainPage();
+}
+```
+
+If you don't have a DI framework in place, you can use the `OcrPlugin.Default` property to access the `IOcrService` instance.
+
+```csharp
+private readonly IOcrService _ocr;
+
+public MainPage(IOcrService? ocr)
+{
+    InitializeComponent();
+
+    _ocr = ocr ?? OcrPlugin.Default;
+}
+```
 
 ## Details
 
@@ -108,8 +132,12 @@ The `IOcrService` interface exposes the following methods:
 ```csharp
 public interface IOcrService
 {
+    event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+    IReadOnlyCollection<string> SupportedLanguages { get; }
     Task InitAsync(CancellationToken ct = default);
     Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default);
+    Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
+    Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
 }
 
 public class OcrResult
@@ -170,9 +198,9 @@ public class OcrViewModel
 {
     readonly IOcrService _ocr;
 
-    public OcrViewModel(IOcrService ocr)
+    public OcrViewModel(IOcrService? ocr)
     {
-        _ocr = ocr;
+        _ocr = ocr ?? OcrPlugin.Default;
     }
 
     public void DoSomeOcr()

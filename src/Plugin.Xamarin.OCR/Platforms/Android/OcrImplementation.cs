@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Gms.Tasks;
 using Android.Graphics;
 using Android.Util;
+using Java.Lang;
 using Java.Util.Concurrent;
 using Xamarin.Google.MLKit.Common;
 using Xamarin.Google.MLKit.Vision.Common;
@@ -93,7 +94,7 @@ namespace Plugin.Xamarin.OCR
                     {
                         // For more accurate results, use the cloud-based recognizer (requires internet).
                         textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
-                            .SetExecutor(Executors.NewFixedThreadPool(1))
+                            .SetExecutor(Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1))
                             .Build());
                     }
                     else
