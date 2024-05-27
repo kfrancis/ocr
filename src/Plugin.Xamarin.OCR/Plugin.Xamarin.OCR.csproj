@@ -26,6 +26,10 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+<MinVerAutoIncrement>minor</MinVerAutoIncrement>
+<MinVerBuildMetadata>build</MinVerBuildMetadata>
+<MinVerTagPrefix>v</MinVerTagPrefix>
+<MinVerVerbosity>trace</MinVerVerbosity>
   </PropertyGroup>
 
   <!-- Package additions -->

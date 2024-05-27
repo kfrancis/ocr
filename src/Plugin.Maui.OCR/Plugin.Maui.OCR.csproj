@@ -36,7 +36,10 @@
     <DebugType>portable</DebugType>
     <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-
+    <MinVerAutoIncrement>minor</MinVerAutoIncrement>
+        <MinVerBuildMetadata>build</MinVerBuildMetadata>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+        <MinVerVerbosity>trace</MinVerVerbosity>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
