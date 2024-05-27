@@ -64,7 +64,7 @@ jobs:
         dotnet tool install --global minver-cli
         git fetch --tags
         git tag
-        $version = minver --auto-increment minor --build-metadata build --verbosity diag
+        $version = minver --auto-increment minor --build-metadata build --verbosity trace
         echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
 
     - name: Restore NuGet packages for Xamarin
