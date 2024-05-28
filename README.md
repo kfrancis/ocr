@@ -51,14 +51,14 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.OCR` or `dotnet add
 
 ## Pattern Matching
 
-One of the more common things that I personally do with OCR is to recognize a pattern in the text. For example, I might want to recognize a date or a phone number or an email address. This is where the `OcrPatternConfig` class comes in.
+One of the more common things I do with OCR is recognize a text pattern. For example, I might want to read a date, a phone number or an email address. This is where the `OcrPatternConfig` class comes in.
 
-Let's say you want to recognize an Ontario Health Card Number in the text of your image. Numbers of those types have some specific qualities that make it easy to match.
+Let's say you want to recognize an Ontario Health Card Number (HCN) in the text of your image. Numbers of those types have some specific qualities that make it easy to match.
 
 1. An Ontario HCN is 10 digits long.
 1. The number must be [Luhn valid](https://en.wikipedia.org/wiki/Luhn_algorithm) (meaning it has a check digit and it's correct).
 
-To do this, you can create a `OcrPatternConfig` object like so:
+To do this, you can create an `OcrPatternConfig` object like so:
 
 ```csharp
 bool IsValidLuhn(string number)
@@ -287,7 +287,7 @@ This event is fired when the OCR service has completed recognizing text from an 
 
 ##### `SupportedLanguages`
 
-A list of supported languages for the OCR service. This is populated after calling `InitAsync`. Allows you to know what language codes are able to be used in OcrOptions.
+A list of supported languages for the OCR service. This is populated after calling `InitAsync`. Allows you to know what language codes can be used in OcrOptions.
 
 #### Methods
 
@@ -309,4 +309,4 @@ Start recognizing text from an image. This is a task that will fire the `Recogni
 
 # Acknowledgements
 
-This project could not have came to be without these projects and people, thank you! <3
+This project could not have come to be without these projects and people, thank you! <3
