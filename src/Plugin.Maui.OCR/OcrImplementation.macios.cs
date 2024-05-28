@@ -53,7 +53,7 @@ class OcrImplementation : IOcrService
         return Task.CompletedTask;
     }
 
-    private static OcrResult ProcessRecognitionResults(VNRequest request, CGSize imageSize)
+    private static OcrResult ProcessOcrResult(VNRequest request, CGSize imageSize, OcrOptions options)
     {
         var ocrResult = new OcrResult();
 
@@ -106,6 +106,20 @@ class OcrImplementation : IOcrService
             }
         }
 
+        if (options?.PatternConfigs != null)
+        {
+            foreach (var config in options.PatternConfigs)
+            {
+                var match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config);
+                if (!string.IsNullOrEmpty(match))
+                {
+                    ocrResult.MatchedValues.Add(match);
+                }
+            }
+        }
+
+        options?.CustomCallback?.Invoke(ocrResult.AllText);
+
         ocrResult.Success = true;
         return ocrResult;
     }
@@ -148,7 +162,7 @@ class OcrImplementation : IOcrService
     /// <exception cref="ArgumentException"></exception>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
-        return await RecognizeTextAsync(imageData, new OcrOptions(TryHard: tryHard), ct);
+        return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard, patternConfig: null), ct);
     }
 
     /// <summary>
@@ -220,7 +234,7 @@ class OcrImplementation : IOcrService
                     return;
                 }
 
-                var result = ProcessRecognitionResults(request, imageSize);
+                var result = ProcessOcrResult(request, imageSize, options);
                 tcs.TrySetResult(result);
             });
 
@@ -370,7 +384,7 @@ class OcrImplementation : IOcrService
 
                 try
                 {
-                    var result = ProcessRecognitionResults(request, imageSize);
+                    var result = ProcessOcrResult(request, imageSize, options);
                     RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
                 }
                 catch (Exception ex)

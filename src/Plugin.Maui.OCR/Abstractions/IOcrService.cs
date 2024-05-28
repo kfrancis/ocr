@@ -1,4 +1,17 @@
+using System.Text.RegularExpressions;
+
 namespace Plugin.Maui.OCR;
+
+/// <summary>
+/// A callback that can be used to provide custom validation for the extracted text.
+/// </summary>
+/// <param name="extractedText">
+/// The extracted text to validate.
+/// </param>
+/// <returns>
+/// True if the text is valid, otherwise false.
+/// </returns>
+public delegate bool CustomOcrValidationCallback(string extractedText);
 
 /// <summary>
 /// OCR API.
@@ -56,17 +69,49 @@ public interface IOcrService
 }
 
 /// <summary>
-/// The options for OCR.
+/// A helper class to extract patterns from text and use the custom validation function (if defined).
 /// </summary>
-/// <param name="Language">The BCP-47 language code</param>
-/// <param name="TryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
-public record OcrOptions(string? Language = null, bool TryHard = false);
+public static class OcrPatternMatcher
+{
+    /// <summary>
+    /// Extracts a pattern from the input text using the provided configuration.
+    /// </summary>
+    /// <param name="input">
+    /// The input text to extract the pattern from.
+    /// </param>
+    /// <param name="config">
+    /// The configuration to use for pattern extraction.
+    /// </param>
+    /// <returns>
+    /// The extracted pattern, or null if no pattern was found or the pattern failed validation.
+    /// </returns>
+    public static string? ExtractPattern(string input, OcrPatternConfig config)
+    {
+        var regex = new Regex(config.RegexPattern);
+        var match = regex.Match(input);
+
+        if (match.Success && (config.ValidationFunction == null || config.ValidationFunction(match.Value)))
+        {
+            return match.Value;
+        }
+        return null;
+    }
+}
 
 /// <summary>
 /// Provides data for the RecognitionCompleted event.
 /// </summary>
 public class OcrCompletedEventArgs : EventArgs
 {
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="result">
+    /// The result of the OCR operation.
+    /// </param>
+    /// <param name="errorMessage">
+    /// Any error message if the OCR operation failed, or empty string otherwise.
+    /// </param>
     public OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null)
     {
         Result = result;
@@ -90,6 +135,109 @@ public class OcrCompletedEventArgs : EventArgs
 }
 
 /// <summary>
+/// The options for OCR.
+/// </summary>
+public class OcrOptions
+{
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="language">
+    /// (Optional) The BCP-47 language code of the language to recognize.
+    /// </param>
+    /// <param name="tryHard">
+    /// (Optional) True to try and tell the API to be more accurate, otherwise just be fast. Default is just to be fast.
+    /// </param>
+    /// <param name="patternConfigs">
+    /// (Optional) The pattern configurations for OCR.
+    /// </param>
+    /// <param name="customCallback">
+    /// (Optional) A callback that can be used to provide custom validation for the extracted text.
+    /// </param>
+    public OcrOptions(string? language = null, bool tryHard = false, List<OcrPatternConfig>? patternConfigs = null, CustomOcrValidationCallback? customCallback = null)
+    {
+        Language = language;
+        TryHard = tryHard;
+        PatternConfigs = patternConfigs;
+        CustomCallback = customCallback;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="language">
+    /// (Optional) The BCP-47 language code of the language to recognize.
+    /// </param>
+    /// <param name="tryHard">
+    /// (Optional) True to try and tell the API to be more accurate, otherwise just be fast. Default is just to be fast.
+    /// </param>
+    /// <param name="patternConfig">
+    /// (Optional) The pattern configuration for OCR.
+    /// </param>
+    /// <param name="customCallback">
+    /// (Optional) A callback that can be used to provide custom validation for the extracted text.
+    /// </param>
+    public OcrOptions(string? language = null, bool tryHard = false, OcrPatternConfig? patternConfig = null, CustomOcrValidationCallback? customCallback = null)
+    {
+        Language = language;
+        TryHard = tryHard;
+        PatternConfigs = new List<OcrPatternConfig> { patternConfig };
+        CustomCallback = customCallback;
+    }
+
+    /// <summary>
+    /// A callback that can be used to provide custom validation for the extracted text.
+    /// </summary>
+    public CustomOcrValidationCallback? CustomCallback { get; set; }
+
+    /// <summary>
+    /// The BCP-47 language code of the language to recognize.
+    /// </summary>
+    public string? Language { get; set; }
+
+    /// <summary>
+    /// The pattern configurations for OCR.
+    /// </summary>
+    public List<OcrPatternConfig>? PatternConfigs { get; set; }
+
+    /// <summary>
+    /// True to try and tell the API to be more accurate, otherwise just be fast.
+    /// </summary>
+    public bool TryHard { get; set; }
+}
+
+/// <summary>
+/// Configuration for OCR patterns.
+/// </summary>
+public class OcrPatternConfig
+{
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="regexPattern">
+    /// The regex pattern to match.
+    /// </param>
+    /// <param name="validationFunction">
+    /// If provided, the extracted text will be validated against this function.
+    /// </param>
+    public OcrPatternConfig(string regexPattern, Func<string, bool> validationFunction = null)
+    {
+        RegexPattern = regexPattern;
+        ValidationFunction = validationFunction;
+    }
+
+    /// <summary>
+    /// The regex pattern to match.
+    /// </summary>
+    public string RegexPattern { get; set; }
+
+    /// <summary>
+    /// If provided, the extracted text will be validated against this function.
+    /// </summary>
+    public Func<string, bool> ValidationFunction { get; set; }
+}
+
+/// <summary>
 /// The result of an OCR operation.
 /// </summary>
 public class OcrResult
@@ -108,6 +256,11 @@ public class OcrResult
     /// The lines of the OCR result.
     /// </summary>
     public IList<string> Lines { get; set; } = new List<string>();
+
+    /// <summary>
+    /// The matched values of the OCR result.
+    /// </summary>
+    public IList<string> MatchedValues { get; set; } = new List<string>();
 
     /// <summary>
     /// Was the OCR successful?

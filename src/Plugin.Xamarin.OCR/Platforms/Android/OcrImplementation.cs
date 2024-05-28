@@ -22,7 +22,7 @@ namespace Plugin.Xamarin.OCR
 
         public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
 
-        public static OcrResult ProcessOcrResult(Java.Lang.Object result)
+        public static OcrResult ProcessOcrResult(Java.Lang.Object result, OcrOptions? options = null)
         {
             var ocrResult = new OcrResult();
             var textResult = (Text)result;
@@ -48,6 +48,21 @@ namespace Plugin.Xamarin.OCR
                     }
                 }
             }
+
+            if (options?.PatternConfigs != null)
+            {
+                foreach (var config in options.PatternConfigs)
+                {
+                    var match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config);
+                    if (!string.IsNullOrEmpty(match))
+                    {
+                        ocrResult.MatchedValues.Add(match);
+                    }
+                }
+            }
+
+            options?.CustomCallback?.Invoke(ocrResult.AllText);
+
             ocrResult.Success = true;
             return ocrResult;
         }
@@ -73,7 +88,7 @@ namespace Plugin.Xamarin.OCR
         /// <returns>The OCR result</returns>
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
         {
-            return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard), ct);
+            return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard, patternConfig: null), ct);
         }
 
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)

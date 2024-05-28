@@ -165,7 +165,7 @@ namespace Plugin.Xamarin.OCR
                         return;
                     }
 
-                    var result = ProcessRecognitionResults(request, imageSize);
+                    var result = ProcessOcrResult(request, imageSize);
                     tcs.TrySetResult(result);
                 });
 
@@ -275,7 +275,7 @@ namespace Plugin.Xamarin.OCR
                         return;
                     }
 
-                    var result = ProcessRecognitionResults(request, imageSize);
+                    var result = ProcessOcrResult(request, imageSize, options);
                     tcs.TrySetResult(result);
                 });
 
@@ -356,7 +356,7 @@ namespace Plugin.Xamarin.OCR
 
                     try
                     {
-                        var result = ProcessRecognitionResults(request, imageSize);
+                        var result = ProcessOcrResult(request, imageSize, options);
                         RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
                     }
                     catch (Exception ex)
@@ -409,7 +409,7 @@ namespace Plugin.Xamarin.OCR
             return Task.CompletedTask;
         }
 
-        private static OcrResult ProcessRecognitionResults(VNRequest request, CGSize imageSize)
+        private static OcrResult ProcessOcrResult(VNRequest request, CGSize imageSize, OcrOptions? options = null)
         {
             var ocrResult = new OcrResult();
 
@@ -448,7 +448,22 @@ namespace Plugin.Xamarin.OCR
                 }
             }
 
+            if (options?.PatternConfigs != null)
+            {
+                foreach (var config in options.PatternConfigs)
+                {
+                    var match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config);
+                    if (!string.IsNullOrEmpty(match))
+                    {
+                        ocrResult.MatchedValues.Add(match);
+                    }
+                }
+            }
+
+            options.CustomCallback?.Invoke(ocrResult.AllText);
+
             ocrResult.Success = true;
+
             return ocrResult;
         }
 

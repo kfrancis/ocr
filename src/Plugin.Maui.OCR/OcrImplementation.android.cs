@@ -19,7 +19,7 @@ internal class OcrImplementation : IOcrService
 
     public IReadOnlyCollection<string> SupportedLanguages => throw new NotImplementedException();
 
-    public static OcrResult ProcessOcrResult(Java.Lang.Object result)
+    public static OcrResult ProcessOcrResult(Java.Lang.Object result, OcrOptions options)
     {
         var ocrResult = new OcrResult();
         var textResult = (Text)result;
@@ -45,6 +45,21 @@ internal class OcrImplementation : IOcrService
                 }
             }
         }
+
+        if (options.PatternConfigs != null)
+        {
+            foreach (var config in options.PatternConfigs)
+            {
+                var match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config);
+                if (!string.IsNullOrEmpty(match))
+                {
+                    ocrResult.MatchedValues.Add(match);
+                }
+            }
+        }
+
+        options.CustomCallback?.Invoke(ocrResult.AllText);
+
         ocrResult.Success = true;
         return ocrResult;
     }
@@ -70,7 +85,7 @@ internal class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
     {
-        return await RecognizeTextAsync(imageData, new OcrOptions(TryHard: tryHard), ct);
+        return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard, patternConfig: null), ct);
     }
 
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
@@ -103,7 +118,7 @@ internal class OcrImplementation : IOcrService
                 // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
                 var processImageTask = ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener()));
                 var result = await processImageTask;
-                return ProcessOcrResult(result);
+                return ProcessOcrResult(result, options);
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
             {
@@ -158,7 +173,7 @@ internal class OcrImplementation : IOcrService
                 }
 
                 // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
-                var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())));
+                var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())), options);
                 RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))

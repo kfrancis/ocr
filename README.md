@@ -49,6 +49,51 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.OCR` or `dotnet add
 | Android  | 5.0 (API 21)              |
 | Windows  | 11 and 10 version 1809+   |
 
+## Pattern Matching
+
+One of the more common things that I personally do with OCR is to recognize a pattern in the text. For example, I might want to recognize a date or a phone number or an email address. This is where the `OcrPatternConfig` class comes in.
+
+Let's say you want to recognize an Ontario Health Card Number in the text of your image. Numbers of those types have some specific qualities that make it easy to match.
+
+1. An Ontario HCN is 10 digits long.
+1. The number must be [Luhn valid](https://en.wikipedia.org/wiki/Luhn_algorithm) (meaning it has a check digit and it's correct).
+
+To do this, you can create a `OcrPatternConfig` object like so:
+
+```csharp
+bool IsValidLuhn(string number)
+{
+    // Convert the string to an array of digits
+    int[] digits = number.Select(d => int.Parse(d.ToString())).ToArray();
+    int checkDigit = 0;
+
+    // Luhn algorithm implementation
+    for (int i = digits.Length - 2; i >= 0; i--)
+    {
+        int currentDigit = digits[i];
+        if ((digits.Length - 2 - i) % 2 == 0) // check if it's an even index from the right
+        {
+            currentDigit *= 2;
+            if (currentDigit > 9)
+            {
+                currentDigit -= 9;
+            }
+        }
+        checkDigit += currentDigit;
+    }
+
+    return (10 - (checkDigit % 10)) % 10 == digits.Last();
+}
+
+var ohipPattern = new OcrPatternConfig(@"\d{10}", IsLuhnValid);
+
+var options = new OcrOptions(tryHard: true, patternConfig: ohipPattern);
+
+var result = await OcrPlugin.Default.RecognizeTextAsync(imageData, options);
+
+var patientHcn = result.MatchedValues.FirstOrDefault(); // This will be the HCN (and only the HCN) if it's found
+```
+
 ## MAUI Setup and Usage
 
 For MAUI, to initialize make sure you use the MauiAppBuilder extension `AddOcr()` like so:

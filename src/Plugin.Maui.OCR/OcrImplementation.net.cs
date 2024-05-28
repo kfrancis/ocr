@@ -25,7 +25,7 @@ class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
-        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard), ct);
+        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard, patternConfig: null), ct);
     }
 
     public Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)

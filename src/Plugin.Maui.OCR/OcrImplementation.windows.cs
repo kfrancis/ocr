@@ -33,7 +33,7 @@ class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
-        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard), ct);
+        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard: tryHard, patternConfig: null), ct);
     }
 
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
@@ -52,8 +52,12 @@ class OcrImplementation : IOcrService
         var decoder = await BitmapDecoder.CreateAsync(stream);
         var softwareBitmap = await decoder.GetSoftwareBitmapAsync();
 
-        var ocrResult = await ocrEngine.RecognizeAsync(softwareBitmap);
+        var result = await ocrEngine.RecognizeAsync(softwareBitmap);
+        return ProcessOcrResult(result, options);
+    }
 
+    private static OcrResult ProcessOcrResult(Windows.Media.Ocr.OcrResult ocrResult, OcrOptions options)
+    {
         var result = new OcrResult
         {
             AllText = ocrResult.Text,
@@ -77,6 +81,20 @@ class OcrImplementation : IOcrService
                 });
             }
         }
+
+        if (options.PatternConfigs != null)
+        {
+            foreach (var config in options.PatternConfigs)
+            {
+                var match = OcrPatternMatcher.ExtractPattern(result.AllText, config);
+                if (!string.IsNullOrEmpty(match))
+                {
+                    result.MatchedValues.Add(match);
+                }
+            }
+        }
+
+        options.CustomCallback?.Invoke(result.AllText);
 
         return result;
     }

@@ -38,7 +38,7 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
         /// <returns>The OCR result</returns>
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
         {
-            return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard), ct);
+            return await RecognizeTextAsync(imageData, new OcrOptions(tryHard: tryHard, patternConfig: null), ct);
         }
 
         public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
@@ -82,6 +82,20 @@ namespace Plugin.Xamarin.OCR.Platforms.UWP
                     });
                 }
             }
+
+            if (options.PatternConfigs != null)
+            {
+                foreach (var config in options.PatternConfigs)
+                {
+                    var match = OcrPatternMatcher.ExtractPattern(result.AllText, config);
+                    if (!string.IsNullOrEmpty(match))
+                    {
+                        result.MatchedValues.Add(match);
+                    }
+                }
+            }
+
+            options.CustomCallback?.Invoke(result.AllText);
 
             return result;
         }
