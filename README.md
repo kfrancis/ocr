@@ -96,7 +96,7 @@ var patientHcn = result.MatchedValues.FirstOrDefault(); // This will be the HCN 
 
 ## MAUI Setup and Usage
 
-For MAUI, to initialize make sure you use the MauiAppBuilder extension `AddOcr()` like so:
+For MAUI, to initialize make sure you use the MauiAppBuilder extension `UseOcr()` like so:
 
 ```csharp
 public static class MauiProgram
@@ -111,7 +111,7 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			}).
-			AddOcr();  // <-- add this line
+			UseOcr();  // <-- add this line
 
 		return builder.Build();
 	}
