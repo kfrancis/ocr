@@ -309,4 +309,4 @@ Start recognizing text from an image. This is a task that will fire the `Recogni
 
 # Acknowledgements
 
-This project could not have come to be without these projects and people, thank you! <3
+Thanks to the great **Gerald Versluis** for making an amazing video about using this project: https://www.youtube.com/watch?v=alY_6Qn0_60
