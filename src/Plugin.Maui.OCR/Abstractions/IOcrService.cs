@@ -87,13 +87,17 @@ public static class OcrPatternMatcher
     /// </returns>
     public static string? ExtractPattern(string input, OcrPatternConfig config)
     {
-        var regex = new Regex(config.RegexPattern);
-        var match = regex.Match(input);
-
-        if (match.Success && (config.ValidationFunction == null || config.ValidationFunction(match.Value)))
+        if (!string.IsNullOrEmpty(config.RegexPattern))
         {
-            return match.Value;
+            var regex = new Regex(config.RegexPattern);
+            var match = regex.Match(input);
+
+            if (match.Success && (config.ValidationFunction == null || config.ValidationFunction(match.Value)))
+            {
+                return match.Value;
+            }
         }
+
         return null;
     }
 }
@@ -111,7 +115,7 @@ public class OcrCompletedEventArgs : EventArgs
     /// </param>
     /// <param name="errorMessage">
     /// Any error message if the OCR operation failed, or empty string otherwise.
-    /// </param>
+    /// </param> {
     public OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null)
     {
         Result = result;
