@@ -85,9 +85,9 @@ public static class OcrPatternMatcher
     /// <returns>
     /// The extracted pattern, or null if no pattern was found or the pattern failed validation.
     /// </returns>
-    public static string? ExtractPattern(string input, OcrPatternConfig config)
+    public static string? ExtractPattern(string input, OcrPatternConfig? config)
     {
-        if (!string.IsNullOrEmpty(config.RegexPattern))
+        if (!string.IsNullOrEmpty(config?.RegexPattern))
         {
             var regex = new Regex(config.RegexPattern);
             var match = regex.Match(input);
@@ -141,24 +141,9 @@ public class OcrCompletedEventArgs : EventArgs
 /// <summary>
 /// The options for OCR.
 /// </summary>
-public class OcrOptions
+public sealed class OcrOptions
 {
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="language">
-    /// (Optional) The BCP-47 language code of the language to recognize.
-    /// </param>
-    /// <param name="tryHard">
-    /// (Optional) True to try and tell the API to be more accurate, otherwise just be fast. Default is just to be fast.
-    /// </param>
-    /// <param name="patternConfigs">
-    /// (Optional) The pattern configurations for OCR.
-    /// </param>
-    /// <param name="customCallback">
-    /// (Optional) A callback that can be used to provide custom validation for the extracted text.
-    /// </param>
-    public OcrOptions(string? language = null, bool tryHard = false, List<OcrPatternConfig>? patternConfigs = null, CustomOcrValidationCallback? customCallback = null)
+    private OcrOptions(string? language, bool tryHard, List<OcrPatternConfig> patternConfigs, CustomOcrValidationCallback? customCallback)
     {
         Language = language;
         TryHard = tryHard;
@@ -167,47 +152,121 @@ public class OcrOptions
     }
 
     /// <summary>
-    /// Constructor
+    /// A callback after recognition is complete
     /// </summary>
-    /// <param name="language">
-    /// (Optional) The BCP-47 language code of the language to recognize.
-    /// </param>
-    /// <param name="tryHard">
-    /// (Optional) True to try and tell the API to be more accurate, otherwise just be fast. Default is just to be fast.
-    /// </param>
-    /// <param name="patternConfig">
-    /// (Optional) The pattern configuration for OCR.
-    /// </param>
-    /// <param name="customCallback">
-    /// (Optional) A callback that can be used to provide custom validation for the extracted text.
-    /// </param>
-    public OcrOptions(string? language = null, bool tryHard = false, OcrPatternConfig? patternConfig = null, CustomOcrValidationCallback? customCallback = null)
+    public CustomOcrValidationCallback? CustomCallback { get; }
+
+    /// <summary>
+    /// The bcp-47 language code to use for OCR.
+    /// </summary>
+    public string? Language { get; }
+
+    /// <summary>
+    /// The pattern configurations to use for OCR.
+    /// </summary>
+    public List<OcrPatternConfig> PatternConfigs { get; }
+
+    /// <summary>
+    /// Should the platform attempt to be more thorough vs quick?
+    /// </summary>
+    public bool TryHard { get; }
+
+    /// <summary>
+    /// Builder for OcrOptions.
+    /// </summary>
+    public class Builder
     {
-        Language = language;
-        TryHard = tryHard;
-        PatternConfigs = new List<OcrPatternConfig> { patternConfig };
-        CustomCallback = customCallback;
+        private CustomOcrValidationCallback? _customCallback;
+        private string? _language;
+        private List<OcrPatternConfig> _patternConfigs = new();
+        private bool _tryHard;
+
+        /// <summary>
+        /// Adds an ocr pattern config to the options
+        /// </summary>
+        /// <param name="patternConfig">
+        /// The pattern configuration to add.
+        /// </param>
+        /// <returns>
+        /// The builder.
+        /// </returns>
+        public Builder AddPatternConfig(OcrPatternConfig patternConfig)
+        {
+            _patternConfigs.Add(patternConfig);
+            return this;
+        }
+
+        /// <summary>
+        /// Build the OCR options
+        /// </summary>
+        /// <returns>
+        /// The OCR options.
+        /// </returns>
+        public OcrOptions Build()
+        {
+            return new OcrOptions(_language, _tryHard, _patternConfigs, _customCallback);
+        }
+
+        /// <summary>
+        /// Sets a custom callback
+        /// </summary>
+        /// <param name="customCallback">
+        /// A callback after recognition is complete
+        /// </param>
+        /// <returns>
+        /// The builder.
+        /// </returns>
+        public Builder SetCustomCallback(CustomOcrValidationCallback customCallback)
+        {
+            _customCallback = customCallback;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the language
+        /// </summary>
+        /// <param name="language">
+        /// The bcp-47 language code to use for OCR.
+        /// </param>
+        /// <returns>
+        /// The builder.
+        /// </returns>
+        public Builder SetLanguage(string language)
+        {
+            _language = language;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the pattern configurations to use for OCR.
+        /// </summary>
+        /// <param name="patternConfigs">
+        /// The pattern configurations to use for OCR.
+        /// </param>
+        /// <returns>
+        /// The builder.
+        /// </returns>
+        public Builder SetPatternConfigs(List<OcrPatternConfig> patternConfigs)
+        {
+            _patternConfigs = patternConfigs ?? new List<OcrPatternConfig>();
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the accuracy level
+        /// </summary>
+        /// <param name="tryHard">
+        /// Should the platform attempt to be more thorough vs quick?
+        /// </param>
+        /// <returns>
+        /// The builder.
+        /// </returns>
+        public Builder SetTryHard(bool tryHard)
+        {
+            _tryHard = tryHard;
+            return this;
+        }
     }
-
-    /// <summary>
-    /// A callback that can be used to provide custom validation for the extracted text.
-    /// </summary>
-    public CustomOcrValidationCallback? CustomCallback { get; set; }
-
-    /// <summary>
-    /// The BCP-47 language code of the language to recognize.
-    /// </summary>
-    public string? Language { get; set; }
-
-    /// <summary>
-    /// The pattern configurations for OCR.
-    /// </summary>
-    public List<OcrPatternConfig>? PatternConfigs { get; set; }
-
-    /// <summary>
-    /// True to try and tell the API to be more accurate, otherwise just be fast.
-    /// </summary>
-    public bool TryHard { get; set; }
 }
 
 /// <summary>

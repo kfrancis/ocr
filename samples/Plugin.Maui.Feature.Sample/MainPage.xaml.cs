@@ -116,8 +116,10 @@ public partial class MainPage : ContentPage
         // Read the stream into the byte array
         await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
 
+        var options = new OcrOptions.Builder().SetTryHard(TryHardSwitch.IsToggled).Build();
+
         // Process the image data using the OCR service
-        return await _ocr.RecognizeTextAsync(imageData, TryHardSwitch.IsToggled, cancellationTokenSource.Token);
+        return await _ocr.RecognizeTextAsync(imageData, options, cancellationTokenSource.Token);
     }
 
     /// <summary>
@@ -139,6 +141,6 @@ public partial class MainPage : ContentPage
         await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
 
         // Process the image data using the OCR service
-        await _ocr.StartRecognizeTextAsync(imageData, new OcrOptions(TryHard: TryHardSwitch.IsToggled), cancellationTokenSource.Token);
+        await _ocr.StartRecognizeTextAsync(imageData, new OcrOptions.Builder().SetTryHard(TryHardSwitch.IsToggled).Build(), cancellationTokenSource.Token);
     }
 }

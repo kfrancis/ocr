@@ -33,7 +33,7 @@ class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
-        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard: tryHard, patternConfig: null), ct);
+        return await RecognizeTextAsync(imageData, new OcrOptions.Builder().SetTryHard(tryHard).Build(), ct);
     }
 
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)

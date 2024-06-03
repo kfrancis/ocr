@@ -1,7 +1,3 @@
-<!-- 
-Everything in here is of course optional. If you want to add/remove something, absolutely do so as you see fit.
-This example README has some dummy APIs you'll need to replace and only acts as a placeholder for some inspiration that you can fill in with your own functionalities.
--->
 ![](nuget.png)
 # Plugin.Xamarin.OCR | Plugin.Maui.OCR
 
@@ -87,7 +83,7 @@ bool IsValidLuhn(string number)
 
 var ohipPattern = new OcrPatternConfig(@"\d{10}", IsLuhnValid);
 
-var options = new OcrOptions(tryHard: true, patternConfig: ohipPattern);
+var options = new OcrOptions.Builder().SetTryHard(true).SetPatternConfig(ohipPattern).Build();
 
 var result = await OcrPlugin.Default.RecognizeTextAsync(imageData, options);
 
@@ -227,6 +223,88 @@ If you're handling camera, you'll need the usual permissions for that. The only 
 ```
 
 This will cause the model necessary to be installed when the application is installed.
+
+## OcrOptions and Builder
+
+The `OcrOptions` class provides a flexible way to configure OCR settings. You can use the `OcrOptions.Builder` class to create instances of `OcrOptions` with various configurations.
+
+### OcrOptions Class
+
+The `OcrOptions` class holds the configuration for OCR operations.
+
+```csharp
+public class OcrOptions
+{
+    public string? Language { get; }
+    public bool TryHard { get; }
+    public List<OcrPatternConfig> PatternConfigs { get; }
+    public CustomOcrValidationCallback? CustomCallback { get; }
+
+    private OcrOptions(string? language, bool tryHard, List<OcrPatternConfig> patternConfigs, CustomOcrValidationCallback? customCallback)
+    {
+        Language = language;
+        TryHard = tryHard;
+        PatternConfigs = patternConfigs;
+        CustomCallback = customCallback;
+    }
+
+    public class Builder
+    {
+        private string? _language;
+        private bool _tryHard;
+        private List<OcrPatternConfig> _patternConfigs = new List<OcrPatternConfig>();
+        private CustomOcrValidationCallback? _customCallback;
+
+        public Builder SetLanguage(string language)
+        {
+            _language = language;
+            return this;
+        }
+
+        public Builder SetTryHard(bool tryHard)
+        {
+            _tryHard = tryHard;
+            return this;
+        }
+
+        public Builder AddPatternConfig(OcrPatternConfig patternConfig)
+        {
+            _patternConfigs.Add(patternConfig);
+            return this;
+        }
+
+        public Builder SetPatternConfigs(List<OcrPatternConfig> patternConfigs)
+        {
+            _patternConfigs = patternConfigs ?? new List<OcrPatternConfig>();
+            return this;
+        }
+
+        public Builder SetCustomCallback(CustomOcrValidationCallback customCallback)
+        {
+            _customCallback = customCallback;
+            return this;
+        }
+
+        public OcrOptions Build()
+        {
+            return new OcrOptions(_language, _tryHard, _patternConfigs, _customCallback);
+        }
+    }
+}
+```
+
+### Usage Example
+
+Using the `OcrOptions.Builder` to create an `OcrOptions` instance is straightforward and flexible:
+
+```csharp
+var options = new OcrOptions.Builder()
+    .SetLanguage("en-US")
+    .SetTryHard(true)
+    .AddPatternConfig(new OcrPatternConfig(@"\d{10}"))
+    .SetCustomCallback(myCustomCallback)
+    .Build();
+```
 
 ### Dependency Injection
 

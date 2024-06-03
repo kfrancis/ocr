@@ -25,7 +25,7 @@ class OcrImplementation : IOcrService
     /// <returns>The OCR result</returns>
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
-        return await RecognizeTextAsync(imageData, new OcrOptions(null, tryHard, patternConfig: null), ct);
+        return await RecognizeTextAsync(imageData, new OcrOptions.Builder().SetTryHard(tryHard).Build(), ct);
     }
 
     public Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
@@ -35,6 +35,7 @@ class OcrImplementation : IOcrService
 
     public Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, null));
+        return Task.CompletedTask;
     }
 }
