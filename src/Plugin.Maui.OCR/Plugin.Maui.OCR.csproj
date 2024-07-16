@@ -39,6 +39,21 @@
 		<MinVerTagPrefix>v</MinVerTagPrefix>
 		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
 	</PropertyGroup>
+    <PropertyGroup>
+        <!-- Enable NuGet package auditing -->
+        <NuGetAudit>true</NuGetAudit>
+
+        <!-- Audit direct and transitive packages -->
+        <NuGetAuditMode>all</NuGetAuditMode>
+
+        <!-- Report low, moderate, high and critical advisories -->
+        <NuGetAuditLevel>low</NuGetAuditLevel>
+
+        <!-- Fails the build on CI or on release when a vulnerability is detected -->
+        <WarningsAsErrors Condition="$(ContinuousIntegrationBuild) == 'true' OR '$(Configuration)' == 'Release'">
+            (WarningsAsErrors);NU1900;NU1901;NU1902;NU1903;NU1904
+        </WarningsAsErrors>
+    </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
@@ -71,55 +86,55 @@
 	</PropertyGroup>
 	<!-- iOS & MacCatalyst -->
 	<ItemGroup Condition="$(TargetFramework.StartsWith('net')) == true AND $(TargetFramework.Contains('-ios')) != true AND $(TargetFramework.Contains('-maccatalyst')) != true ">
-		<Compile Remove="**\*.ios.cs"/>
-		<None Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
-		<Compile Remove="**\ios\**\*.cs"/>
-		<None Include="**\ios\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
-		<Compile Remove="**\*.macios.cs"/>
-		<None Include="**\*.macios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
-		<Compile Remove="**\macios\**\*.cs"/>
-		<None Include="**\macios\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+		<Compile Remove="**\*.ios.cs" />
+		<None Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+		<Compile Remove="**\ios\**\*.cs" />
+		<None Include="**\ios\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+		<Compile Remove="**\*.macios.cs" />
+		<None Include="**\*.macios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+		<Compile Remove="**\macios\**\*.cs" />
+		<None Include="**\macios\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 	</ItemGroup>
 	<!-- Android -->
 	<ItemGroup Condition="$(TargetFramework.StartsWith('net')) == true AND $(TargetFramework.Contains('-android')) != true">
-		<Compile Remove="**\*.android.cs"/>
-		<None Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
-		<Compile Remove="**\android\**\*.cs"/>
-		<None Include="**\android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+		<Compile Remove="**\*.android.cs" />
+		<None Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+		<Compile Remove="**\android\**\*.cs" />
+		<None Include="**\android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 	</ItemGroup>
 	<!-- Windows -->
 	<ItemGroup Condition="$(TargetFramework.StartsWith('net')) == true AND $(TargetFramework.Contains('-windows')) != true">
-		<Compile Remove="**\*.windows.cs"/>
-		<None Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
-		<Compile Remove="**\windows\**\*.cs"/>
-		<None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+		<Compile Remove="**\*.windows.cs" />
+		<None Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+		<Compile Remove="**\windows\**\*.cs" />
+		<None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 	</ItemGroup>
 	<!-- .NET (generic) -->
 	<ItemGroup Condition="!($(TargetFramework.StartsWith('net')) == true AND $(TargetFramework.EndsWith('.0')) == true AND $(TargetFramework.Contains('-')) != true)">
 		<!-- e.g net6.0 or net8.0 (and higher) -->
-		<Compile Remove="**\*.net.cs"/>
-		<None Include="**\*.net.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+		<Compile Remove="**\*.net.cs" />
+		<None Include="**\*.net.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)"/>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="MinVer" Version="5.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="System.Management" Version="8.0.0" Condition="$(TargetFramework.Contains('-windows')) == true"/>
-		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
+		<PackageReference Include="System.Management" Version="8.0.0" Condition="$(TargetFramework.Contains('-windows')) == true" />
+		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-        <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"/>
-		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.3.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"/>
+        <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
+		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.3.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
-		<PackageReference Include="Xamarin.Google.MLKit.TextRecognition" Version="116.0.0.6" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"/>
-        <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.6.2.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"/>
+		<PackageReference Include="Xamarin.Google.MLKit.TextRecognition" Version="116.0.0.7" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
+        <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.7.0.2" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
 	</ItemGroup>
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<PackageReference Include="Roslynator.Analyzers" Version="4.12.2">
+		<PackageReference Include="Roslynator.Analyzers" Version="4.12.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -128,19 +143,19 @@
   </ItemGroup>
 	<!-- Package additions -->
 	<ItemGroup>
-		<None Include="..\..\nuget.png" PackagePath="icon.png" Pack="true"/>
-		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+		<None Include="..\..\nuget.png" PackagePath="icon.png" Pack="true" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	<Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
 		<ItemGroup>
 			<!-- Filter out unnecessary files -->
-			<_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))"/>
+			<_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))" />
 		</ItemGroup>
 		<!-- Print batches for debug purposes -->
-		<Message Text="Batch for .nupkg: ReferenceCopyLocalPaths = @(_ReferenceCopyLocalPaths), ReferenceCopyLocalPaths.DestinationSubDirectory = %(_ReferenceCopyLocalPaths.DestinationSubDirectory) Filename = %(_ReferenceCopyLocalPaths.Filename) Extension = %(_ReferenceCopyLocalPaths.Extension)" Importance="High" Condition="'@(_ReferenceCopyLocalPaths)' != ''"/>
+		<Message Text="Batch for .nupkg: ReferenceCopyLocalPaths = @(_ReferenceCopyLocalPaths), ReferenceCopyLocalPaths.DestinationSubDirectory = %(_ReferenceCopyLocalPaths.DestinationSubDirectory) Filename = %(_ReferenceCopyLocalPaths.Filename) Extension = %(_ReferenceCopyLocalPaths.Extension)" Importance="High" Condition="'@(_ReferenceCopyLocalPaths)' != ''" />
 		<ItemGroup>
 			<!-- Add file to package with consideration of sub folder. If empty, the root folder is chosen. -->
-			<BuildOutputInPackage Include="@(_ReferenceCopyLocalPaths)" TargetPath="%(_ReferenceCopyLocalPaths.DestinationSubDirectory)"/>
+			<BuildOutputInPackage Include="@(_ReferenceCopyLocalPaths)" TargetPath="%(_ReferenceCopyLocalPaths.DestinationSubDirectory)" />
 		</ItemGroup>
 	</Target>
 </Project>

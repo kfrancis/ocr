@@ -460,7 +460,7 @@ namespace Plugin.Xamarin.OCR
                 }
             }
 
-            options.CustomCallback?.Invoke(ocrResult.AllText);
+            options?.CustomCallback?.Invoke(ocrResult.AllText);
 
             ocrResult.Success = true;
 
