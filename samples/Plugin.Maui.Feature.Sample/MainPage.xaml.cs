@@ -87,15 +87,18 @@ public partial class MainPage : ContentPage
     {
         var photo = await MediaPicker.Default.PickPhotoAsync();
 
-        if (photo != null)
+        if (photo == null)
         {
-            _ocr.RecognitionCompleted += (s, e) =>
-            {
-                ResultLbl.Text = e.Result.AllText;
-                ClearBtn.IsEnabled = true;
-            };
-            await StartProcessingPhoto(photo);
+            return;
         }
+
+        _ocr.RecognitionCompleted += (s, c) =>
+        {
+            ResultLbl.Text = c is { IsSuccessful: true, Result: not null } ? c.Result.AllText : $"Error: {c.ErrorMessage}";
+
+            ClearBtn.IsEnabled = true;
+        };
+        await StartProcessingPhoto(photo);
     }
 
     /// <summary>

@@ -135,7 +135,7 @@ internal class OcrImplementation : IOcrService, IDisposable
                     textScanner = s_textRecognizer;
                 }
 
-                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case 
+                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case
                 var result = await textScanner.Process(srcImage).AsAsync<Text>();
                 return ProcessOcrResult(result, options);
             }
@@ -195,9 +195,9 @@ internal class OcrImplementation : IOcrService, IDisposable
                     textScanner = s_textRecognizer;
                 }
 
-                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case 
+                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case
                 var result = ProcessOcrResult(await textScanner.Process(srcImage).AsAsync<Text>(), options);
-                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result));
+                RecognitionCompleted(this, new OcrCompletedEventArgs(result));
                 break;
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
@@ -219,7 +219,7 @@ internal class OcrImplementation : IOcrService, IDisposable
         // If all retries have failed, throw the last exception
         if (lastException != null)
         {
-            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, lastException.Message));
+            RecognitionCompleted(this, new OcrCompletedEventArgs(null, lastException.Message));
         }
     }
     private static void ReleaseUnmanagedResources()

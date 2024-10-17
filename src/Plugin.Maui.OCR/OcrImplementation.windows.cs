@@ -82,16 +82,9 @@ class OcrImplementation : IOcrService
             }
         }
 
-        if (options.PatternConfigs != null)
+        foreach (var match in options.PatternConfigs.Select(config => OcrPatternMatcher.ExtractPattern(result.AllText, config)).Where(match => !string.IsNullOrEmpty(match)))
         {
-            foreach (var config in options.PatternConfigs)
-            {
-                var match = OcrPatternMatcher.ExtractPattern(result.AllText, config);
-                if (!string.IsNullOrEmpty(match))
-                {
-                    result.MatchedValues.Add(match);
-                }
-            }
+            result.MatchedValues.Add(match);
         }
 
         options.CustomCallback?.Invoke(result.AllText);
@@ -141,6 +134,6 @@ class OcrImplementation : IOcrService
             }
         }
 
-        RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
+        RecognitionCompleted.Invoke(this, new OcrCompletedEventArgs(result));
     }
 }

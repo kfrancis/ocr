@@ -87,15 +87,17 @@ public static class OcrPatternMatcher
     /// </returns>
     public static string? ExtractPattern(string input, OcrPatternConfig? config)
     {
-        if (!string.IsNullOrEmpty(config?.RegexPattern))
+        if (string.IsNullOrEmpty(config?.RegexPattern))
         {
-            var regex = new Regex(config.RegexPattern);
-            var match = regex.Match(input);
+            return null;
+        }
 
-            if (match.Success && (config.ValidationFunction == null || config.ValidationFunction(match.Value)))
-            {
-                return match.Value;
-            }
+        var regex = new Regex(config.RegexPattern);
+        var match = regex.Match(input);
+
+        if (match.Success && config.ValidationFunction(match.Value))
+        {
+            return match.Value;
         }
 
         return null;
@@ -246,9 +248,9 @@ public sealed class OcrOptions
         /// <returns>
         /// The builder.
         /// </returns>
-        public Builder SetPatternConfigs(List<OcrPatternConfig> patternConfigs)
+        public Builder SetPatternConfigs(List<OcrPatternConfig>? patternConfigs)
         {
-            _patternConfigs = patternConfigs ?? new List<OcrPatternConfig>();
+            _patternConfigs = patternConfigs ?? [];
             return this;
         }
 

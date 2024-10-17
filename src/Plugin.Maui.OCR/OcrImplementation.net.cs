@@ -35,7 +35,7 @@ class OcrImplementation : IOcrService
 
     public Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
     {
-        RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, null));
+        RecognitionCompleted.Invoke(this, new OcrCompletedEventArgs(null));
         return Task.CompletedTask;
     }
 }

@@ -32,6 +32,7 @@ class OcrImplementation : IOcrService
         ct.Register(() => tcs.TrySetCanceled());
         using var recognizeTextRequest = new VNRecognizeTextRequest((_, error) =>
         {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (error != null)
             {
                 tcs.TrySetException(new Exception(error.LocalizedDescription));
@@ -43,12 +44,12 @@ class OcrImplementation : IOcrService
                 tcs.TrySetCanceled(ct);
             }
         });
-        var supportedLangs = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
+        var supportedRecognitionLanguages = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
         if (langError != null)
         {
             throw new InvalidOperationException(langError.LocalizedDescription);
         }
-        _supportedLanguages = new List<string>(supportedLangs.Select(ns => ns)).AsReadOnly();
+        _supportedLanguages = new List<string>(supportedRecognitionLanguages.Select(ns => ns)).AsReadOnly();
 
         return Task.CompletedTask;
     }
@@ -58,7 +59,7 @@ class OcrImplementation : IOcrService
         var ocrResult = new OcrResult();
 
         var observations = request.GetResults<VNRecognizedTextObservation>();
-        if (observations == null || observations.Length == 0)
+        if (observations.Length == 0)
         {
             ocrResult.Success = false;
             return ocrResult;
@@ -67,64 +68,59 @@ class OcrImplementation : IOcrService
         foreach (var observation in observations)
         {
             var topCandidate = observation.TopCandidates(1).FirstOrDefault();
-            if (topCandidate != null)
+            if (topCandidate == null)
             {
-                ocrResult.AllText += " " + topCandidate.String;
-                ocrResult.Lines.Add(topCandidate.String);
+                continue;
+            }
 
-                if (!string.IsNullOrEmpty(topCandidate.String))
+            ocrResult.AllText += " " + topCandidate.String;
+            ocrResult.Lines.Add(topCandidate.String);
+
+            if (!string.IsNullOrEmpty(topCandidate.String))
+            {
+                var textRange = new NSRange(0, topCandidate.String.Length);
+                using var box = topCandidate.GetBoundingBox(textRange, out var boxError);
+                if (boxError != null)
                 {
-                    var textRange = new NSRange(0, topCandidate.String.Length);
-                    using var box = topCandidate.GetBoundingBox(textRange, out var boxError);
-                    if (boxError != null)
-                    {
-                        throw new InvalidOperationException(boxError.LocalizedDescription);
-                    }
-
-                    var boxRect = ConvertToImageRect(box, imageSize);
-
-                    // Splitting by spaces to create elements might not be accurate for all languages/scripts
-                    topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
-                    {
-                        Text = e,
-                        Confidence = topCandidate.Confidence,
-                        X = Convert.ToInt32(boxRect.X),
-                        Y = Convert.ToInt32(boxRect.Y),
-                        Width = Convert.ToInt32(boxRect.Width),
-                        Height = Convert.ToInt32(boxRect.Height)
-                    }));
+                    throw new InvalidOperationException(boxError.LocalizedDescription);
                 }
-                else
+
+                var boxRect = ConvertToImageRect(box, imageSize);
+
+                // Splitting by spaces to create elements might not be accurate for all languages/scripts
+                topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
                 {
-                    // Splitting by spaces to create elements might not be accurate for all languages/scripts
-                    topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
-                    {
-                        Text = e,
-                        Confidence = topCandidate.Confidence
-                    }));
-                }
+                    Text = e,
+                    Confidence = topCandidate.Confidence,
+                    X = Convert.ToInt32(boxRect.X),
+                    Y = Convert.ToInt32(boxRect.Y),
+                    Width = Convert.ToInt32(boxRect.Width),
+                    Height = Convert.ToInt32(boxRect.Height)
+                }));
+            }
+            else
+            {
+                // Splitting by spaces to create elements might not be accurate for all languages/scripts
+                topCandidate.String.Split(" ").ToList().ForEach(e => ocrResult.Elements.Add(new OcrResult.OcrElement
+                {
+                    Text = e,
+                    Confidence = topCandidate.Confidence
+                }));
             }
         }
 
-        if (options?.PatternConfigs != null)
+        foreach (var match in options.PatternConfigs.Select(config => OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config)).Where(match => !string.IsNullOrEmpty(match)))
         {
-            foreach (var config in options.PatternConfigs)
-            {
-                var match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config);
-                if (!string.IsNullOrEmpty(match))
-                {
-                    ocrResult.MatchedValues.Add(match);
-                }
-            }
+            ocrResult.MatchedValues.Add(match);
         }
 
-        options?.CustomCallback?.Invoke(ocrResult.AllText);
+        options.CustomCallback?.Invoke(ocrResult.AllText);
 
         ocrResult.Success = true;
         return ocrResult;
     }
 
-    private static UIImage? ImageFromByteArray(byte[] data)
+    private static UIImage? ImageFromByteArray(byte[]? data)
     {
         return data != null ? new UIImage(NSData.FromArray(data)) : null;
     }
@@ -191,40 +187,25 @@ class OcrImplementation : IOcrService
         {
             using var srcImage = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
             var imageSize = srcImage.Size;
-            CGImagePropertyOrientation? imageOrientation = null;
-            switch (srcImage.Orientation)
+            CGImagePropertyOrientation? imageOrientation = srcImage.Orientation switch
             {
-                case UIImageOrientation.Up:
-                    imageOrientation = CGImagePropertyOrientation.Up;
-                    break;
-                case UIImageOrientation.Down:
-                    imageOrientation = CGImagePropertyOrientation.Down;
-                    break;
-                case UIImageOrientation.Left:
-                    imageOrientation = CGImagePropertyOrientation.Left;
-                    break;
-                case UIImageOrientation.Right:
-                    imageOrientation = CGImagePropertyOrientation.Right;
-                    break;
-                case UIImageOrientation.UpMirrored:
-                    imageOrientation = CGImagePropertyOrientation.UpMirrored;
-                    break;
-                case UIImageOrientation.DownMirrored:
-                    imageOrientation = CGImagePropertyOrientation.DownMirrored;
-                    break;
-                case UIImageOrientation.LeftMirrored:
-                    imageOrientation = CGImagePropertyOrientation.LeftMirrored;
-                    break;
-                case UIImageOrientation.RightMirrored:
-                    imageOrientation = CGImagePropertyOrientation.RightMirrored;
-                    break;
-            }
+                UIImageOrientation.Up => CGImagePropertyOrientation.Up,
+                UIImageOrientation.Down => CGImagePropertyOrientation.Down,
+                UIImageOrientation.Left => CGImagePropertyOrientation.Left,
+                UIImageOrientation.Right => CGImagePropertyOrientation.Right,
+                UIImageOrientation.UpMirrored => CGImagePropertyOrientation.UpMirrored,
+                UIImageOrientation.DownMirrored => CGImagePropertyOrientation.DownMirrored,
+                UIImageOrientation.LeftMirrored => CGImagePropertyOrientation.LeftMirrored,
+                UIImageOrientation.RightMirrored => CGImagePropertyOrientation.RightMirrored,
+                _ => null
+            };
 
-            using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
+            using var recognizeTextRequest = new VNRecognizeTextRequest((request, nsError) =>
             {
-                if (error != null)
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                if (nsError != null)
                 {
-                    tcs.TrySetException(new Exception(error.LocalizedDescription));
+                    tcs.TrySetException(new Exception(nsError.LocalizedDescription));
                     return;
                 }
 
@@ -238,27 +219,22 @@ class OcrImplementation : IOcrService
                 tcs.TrySetResult(result);
             });
 
-            switch (options.TryHard)
+            recognizeTextRequest.RecognitionLevel = options.TryHard switch
             {
-                case true:
-                    recognizeTextRequest.RecognitionLevel = VNRequestTextRecognitionLevel.Accurate;
-                    break;
-
-                case false:
-                    recognizeTextRequest.RecognitionLevel = VNRequestTextRecognitionLevel.Fast;
-                    break;
-            }
+                true => VNRequestTextRecognitionLevel.Accurate,
+                false => VNRequestTextRecognitionLevel.Fast
+            };
 
             if (!string.IsNullOrEmpty(options.Language))
             {
-                var supportedLangs = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
+                var supportedRecognitionLanguages = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
                 if (langError != null)
                 {
                     throw new InvalidOperationException(langError.LocalizedDescription);
                 }
-                var supportedLangList = new List<string>(supportedLangs.Select(ns => ns));
+                var supportedLangList = new List<string>(supportedRecognitionLanguages.Select(ns => ns));
 
-                if (options.Language is string langString && supportedLangList.Contains(langString))
+                if (options.Language is { } langString && supportedLangList.Contains(langString))
                 {
                     recognizeTextRequest.RecognitionLanguages = new[] { langString };
                 }
@@ -273,18 +249,9 @@ class OcrImplementation : IOcrService
             recognizeTextRequest.PreferBackgroundProcessing = true;
             recognizeTextRequest.MinimumTextHeight = 0;
 
-            NSError? error = null;
+            ocrHandler = imageOrientation != null ? new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary()) : new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
 
-            if (imageOrientation != null)
-            {
-                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary());
-                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out error);
-            }
-            else
-            {
-                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
-                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out error);
-            }
+            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
 
             if (error != null)
             {
@@ -298,7 +265,6 @@ class OcrImplementation : IOcrService
         finally
         {
             ocrHandler?.Dispose();
-            ocrHandler = null;
         }
 
         return await tcs.Task;
@@ -333,63 +299,46 @@ class OcrImplementation : IOcrService
 
         ct.ThrowIfCancellationRequested();
 
-        VNImageRequestHandler? ocrHandler = null;
-
         try
         {
             using var srcImage = ImageFromByteArray(imageData) ?? throw new ArgumentException("Invalid image data");
             var imageSize = srcImage.Size;
-            CGImagePropertyOrientation? imageOrientation = null;
-            switch (srcImage.Orientation)
+            CGImagePropertyOrientation? imageOrientation = srcImage.Orientation switch
             {
-                case UIImageOrientation.Up:
-                    imageOrientation = CGImagePropertyOrientation.Up;
-                    break;
-                case UIImageOrientation.Down:
-                    imageOrientation = CGImagePropertyOrientation.Down;
-                    break;
-                case UIImageOrientation.Left:
-                    imageOrientation = CGImagePropertyOrientation.Left;
-                    break;
-                case UIImageOrientation.Right:
-                    imageOrientation = CGImagePropertyOrientation.Right;
-                    break;
-                case UIImageOrientation.UpMirrored:
-                    imageOrientation = CGImagePropertyOrientation.UpMirrored;
-                    break;
-                case UIImageOrientation.DownMirrored:
-                    imageOrientation = CGImagePropertyOrientation.DownMirrored;
-                    break;
-                case UIImageOrientation.LeftMirrored:
-                    imageOrientation = CGImagePropertyOrientation.LeftMirrored;
-                    break;
-                case UIImageOrientation.RightMirrored:
-                    imageOrientation = CGImagePropertyOrientation.RightMirrored;
-                    break;
-            }
+                UIImageOrientation.Up => CGImagePropertyOrientation.Up,
+                UIImageOrientation.Down => CGImagePropertyOrientation.Down,
+                UIImageOrientation.Left => CGImagePropertyOrientation.Left,
+                UIImageOrientation.Right => CGImagePropertyOrientation.Right,
+                UIImageOrientation.UpMirrored => CGImagePropertyOrientation.UpMirrored,
+                UIImageOrientation.DownMirrored => CGImagePropertyOrientation.DownMirrored,
+                UIImageOrientation.LeftMirrored => CGImagePropertyOrientation.LeftMirrored,
+                UIImageOrientation.RightMirrored => CGImagePropertyOrientation.RightMirrored,
+                _ => null
+            };
 
             using var recognizeTextRequest = new VNRecognizeTextRequest((request, error) =>
             {
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
                 if (error != null)
                 {
-                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, error.LocalizedDescription));
+                    RecognitionCompleted(this, new OcrCompletedEventArgs(null, error.LocalizedDescription));
                     return;
                 }
 
                 if (ct.IsCancellationRequested)
                 {
-                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, "Operation was cancelled."));
+                    RecognitionCompleted(this, new OcrCompletedEventArgs(null, "Operation was cancelled."));
                     return;
                 }
 
                 try
                 {
                     var result = ProcessOcrResult(request, imageSize, options);
-                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
+                    RecognitionCompleted(this, new OcrCompletedEventArgs(result));
                 }
                 catch (Exception ex)
                 {
-                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, ex.Message));
+                    RecognitionCompleted(this, new OcrCompletedEventArgs(null, ex.Message));
                 }
             });
 
@@ -399,12 +348,12 @@ class OcrImplementation : IOcrService
             // Handle language options
             if (!string.IsNullOrEmpty(options.Language))
             {
-                var supportedLangs = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
+                var supportedRecognitionLanguages = GetSupportedRecognitionLanguages(recognizeTextRequest, recognizeTextRequest.RecognitionLevel, out var langError);
                 if (langError != null)
                 {
                     throw new InvalidOperationException(langError.LocalizedDescription);
                 }
-                var supportedLangList = new List<string>(supportedLangs.Select(ns => ns));
+                var supportedLangList = new List<string>(supportedRecognitionLanguages.Select(ns => ns));
 
                 if (supportedLangList.Contains(options.Language))
                 {
@@ -422,27 +371,18 @@ class OcrImplementation : IOcrService
             recognizeTextRequest.PreferBackgroundProcessing = true;
             recognizeTextRequest.MinimumTextHeight = 0;
 
-            NSError? handlerError = null;
+            using var ocrHandler = imageOrientation != null
+                ? new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary())
+                : new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
 
-            if (imageOrientation != null)
+            if (!ocrHandler.Perform([recognizeTextRequest], out var handlerError) && handlerError != null && !string.IsNullOrEmpty(handlerError.LocalizedDescription))
             {
-                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary());
-                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out handlerError);
-            }
-            else
-            {
-                ocrHandler = new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
-                ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out handlerError);
-            }
-
-            if (handlerError != null)
-            {
-                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, handlerError.LocalizedDescription));
-            }
+                RecognitionCompleted(this, new OcrCompletedEventArgs(null, handlerError.LocalizedDescription));
+            } 
         }
         catch (Exception ex)
         {
-            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, ex.Message));
+            RecognitionCompleted(this, new OcrCompletedEventArgs(null, ex.Message));
         }
 
         return Task.CompletedTask;
