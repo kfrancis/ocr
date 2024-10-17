@@ -45,6 +45,48 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.OCR` or `dotnet add
 | Android  | 5.0 (API 21)              |
 | Windows  | 11 and 10 version 1809+   |
 
+## OCR Engines and Algorithms
+
+The **Plugin.Maui.OCR** library is designed to provide a cross-platform, easy-to-use wrapper for native OCR implementations without relying on external OCR engines like Tesseract. Below is an overview of the OCR engines and frameworks used on supported platforms:
+
+### iOS
+The plugin leverages Apple's [Vision Framework](https://developer.apple.com/documentation/vision/vnrecognizetextrequest) for text recognition. This framework is highly optimized for Apple devices and supports various recognition features like text in different languages, accuracy levels, and bounding box detection. Key aspects include:
+
+- **OCR Engine**: Vision Framework
+- **Supported Languages**: Determined dynamically at runtime, based on the available languages supported by Vision's text recognition capabilities.
+- **Recognition Levels**: `Fast` (for quick recognition) and `Accurate` (for higher precision).
+- **Other Features**: Bounding box detection, CPU/GPU processing options, and real-time recognition capabilities.
+
+For further details, you can review the official [Vision Framework documentation](https://developer.apple.com/documentation/vision).
+
+### Android
+The plugin utilizes Google's [ML Kit](https://developers.google.com/ml-kit/vision/text-recognition/overview) for on-device and cloud-based text recognition. ML Kit provides efficient OCR capabilities and can operate in both offline and online modes depending on the configuration. Key aspects include:
+
+- **OCR Engine**: [ML Kit Text Recognition](https://developers.google.com/ml-kit/vision/text-recognition)
+- **Supported Languages**:
+  - **On-Device**: Primarily Latin-based scripts such as English, Spanish, French, German, Italian, and Portuguese.
+  - **Cloud-Based**: A broader range of languages, including Arabic, Chinese (Simplified and Traditional), Greek, Russian, Thai, and many more.
+- **Recognition Levels**: The plugin offers two modes:
+  - **Fast** (on-device, for quicker results with limited language support)
+  - **Accurate** (cloud-based, for more accurate results and extended language support)
+- **Other Features**: Confidence scores for recognized text, bounding box detection for each text element, and cloud-based recognition for more extensive language support (requires an internet connection).
+
+### Windows
+The plugin leverages the native [Windows.Media.Ocr](https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr) API for text recognition. This API enables high-quality OCR capabilities on supported Windows devices without the need for external libraries. Key aspects include:
+
+- **OCR Engine**: [Windows.Media.Ocr](https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr)
+- **Supported Languages**: The OCR engine supports languages installed on the user's system. A dynamic list of supported languages can be retrieved using the `OcrEngine.AvailableRecognizerLanguages` property.
+- **Recognition Levels**: The Windows OCR API operates with a single recognition mode, but its efficiency can be influenced by the language settings and image quality.
+- **Other Features**: Bounding box detection for recognized words, support for different image formats, and multi-language support based on user profile languages.
+
+## Camera Specifications and Quality Considerations
+While the plugin handles the OCR process, the following can impact the recognition quality:
+
+- **Camera Resolution**: Higher resolutions generally result in better text recognition.
+- **Distance from Target**: Keeping the camera at an optimal distance for clear, sharp text is recommended.
+- **Lighting Conditions**: Adequate lighting will enhance the OCR accuracy.
+- **Supported Image Formats**: The plugin works with common formats such as JPEG and PNG.
+
 ## Pattern Matching
 
 One of the more common things I do with OCR is recognize a text pattern. For example, I might want to read a date, a phone number or an email address. This is where the `OcrPatternConfig` class comes in.
