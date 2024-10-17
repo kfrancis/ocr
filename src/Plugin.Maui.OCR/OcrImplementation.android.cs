@@ -1,20 +1,23 @@
 using System.Diagnostics;
-using Android.Gms.Tasks;
 using Android.Graphics;
-using Android.Util;
 using Java.Lang;
 using Java.Util.Concurrent;
 using Xamarin.Google.MLKit.Common;
 using Xamarin.Google.MLKit.Vision.Common;
 using Xamarin.Google.MLKit.Vision.Text;
 using Xamarin.Google.MLKit.Vision.Text.Latin;
+using Android.Gms.Extensions;
 using static Plugin.Maui.OCR.OcrResult;
 using Task = System.Threading.Tasks.Task;
 
 namespace Plugin.Maui.OCR;
 
-internal class OcrImplementation : IOcrService
+internal class OcrImplementation : IOcrService, IDisposable
 {
+    // Create a singleton ExecutorService
+    private static IExecutorService? s_executorService = Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
+    private static ITextRecognizer? s_textRecognizer = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+
     public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
 
     // Define the supported languages
@@ -63,16 +66,12 @@ internal class OcrImplementation : IOcrService
             }
         }
 
-        if (options.PatternConfigs != null)
+        foreach (var match in from config in options.PatternConfigs
+                              let match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config)
+                              where !string.IsNullOrEmpty(match)
+                              select match)
         {
-            foreach (var config in options.PatternConfigs)
-            {
-                var match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config);
-                if (!string.IsNullOrEmpty(match))
-                {
-                    ocrResult.MatchedValues.Add(match);
-                }
-            }
+            ocrResult.MatchedValues.Add(match);
         }
 
         options.CustomCallback?.Invoke(ocrResult.AllText);
@@ -85,7 +84,7 @@ internal class OcrImplementation : IOcrService
     /// Initialize the OCR on the platform
     /// </summary>
     /// <param name="ct">An optional cancellation token</param>
-    public Task InitAsync(System.Threading.CancellationToken ct = default)
+    public Task InitAsync(CancellationToken ct = default)
     {
         // Initialization might not be required for ML Kit's on-device text recognition,
         // but you can perform any necessary setup here.
@@ -100,12 +99,12 @@ internal class OcrImplementation : IOcrService
     /// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
     /// <param name="ct">An optional cancellation token</param>
     /// <returns>The OCR result</returns>
-    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, System.Threading.CancellationToken ct = default)
+    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default)
     {
         return await RecognizeTextAsync(imageData, new OcrOptions.Builder().SetTryHard(tryHard).Build(), ct);
     }
 
-    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
+    public async Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
     {
         using var srcBitmap = await BitmapFactory.DecodeByteArrayAsync(imageData, 0, imageData.Length);
         using var srcImage = InputImage.FromBitmap(srcBitmap, 0);
@@ -121,20 +120,23 @@ internal class OcrImplementation : IOcrService
             {
                 if (options.TryHard)
                 {
+                    s_executorService ??= Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
+
                     // For more accurate results, use the cloud-based recognizer (requires internet).
                     textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
-                        .SetExecutor(Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1))
+                        .SetExecutor(s_executorService)
                         .Build());
                 }
                 else
                 {
                     // Use the default on-device recognizer for faster results.
-                    textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+                    s_textRecognizer ??= TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+
+                    textScanner = s_textRecognizer;
                 }
 
-                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
-                var processImageTask = ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener()));
-                var result = await processImageTask;
+                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case 
+                var result = await textScanner.Process(srcImage).AsAsync<Text>();
                 return ProcessOcrResult(result, options);
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
@@ -146,8 +148,10 @@ internal class OcrImplementation : IOcrService
             }
             finally
             {
-                textScanner?.Dispose();
-                textScanner = null;
+                if (textScanner != s_textRecognizer)
+                {
+                    textScanner?.Dispose();
+                }
             }
         }
 
@@ -156,13 +160,11 @@ internal class OcrImplementation : IOcrService
         {
             throw lastException;
         }
-        else
-        {
-            throw new InvalidOperationException("OCR operation failed without an exception.");
-        }
+
+        throw new InvalidOperationException("OCR operation failed without an exception.");
     }
 
-    public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, System.Threading.CancellationToken ct = default)
+    public async Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
     {
         using var srcBitmap = await BitmapFactory.DecodeByteArrayAsync(imageData, 0, imageData.Length);
         using var srcImage = InputImage.FromBitmap(srcBitmap, 0);
@@ -178,20 +180,25 @@ internal class OcrImplementation : IOcrService
             {
                 if (options.TryHard)
                 {
+                    s_executorService ??= Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
+
                     // For more accurate results, use the cloud-based recognizer (requires internet).
                     textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
-                        .SetExecutor(Executors.NewFixedThreadPool(1))
+                        .SetExecutor(s_executorService)
                         .Build());
                 }
                 else
                 {
+                    s_textRecognizer ??= TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+
                     // Use the default on-device recognizer for faster results.
-                    textScanner = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+                    textScanner = s_textRecognizer;
                 }
 
-                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case ..
-                var result = ProcessOcrResult(await ToAwaitableTask(textScanner.Process(srcImage).AddOnSuccessListener(new OnSuccessListener()).AddOnFailureListener(new OnFailureListener())), options);
-                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result, null));
+                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case 
+                var result = ProcessOcrResult(await textScanner.Process(srcImage).AsAsync<Text>(), options);
+                RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result));
+                break;
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
             {
@@ -202,8 +209,10 @@ internal class OcrImplementation : IOcrService
             }
             finally
             {
-                textScanner?.Dispose();
-                textScanner = null;
+                if (textScanner != s_textRecognizer)
+                {
+                    textScanner?.Dispose();
+                }
             }
         }
 
@@ -212,54 +221,21 @@ internal class OcrImplementation : IOcrService
         {
             RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, lastException.Message));
         }
-        else
-        {
-            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, "OCR operation failed without an exception."));
-        }
+    }
+    private static void ReleaseUnmanagedResources()
+    {
+        s_executorService?.Shutdown();
+        s_textRecognizer?.Dispose();
     }
 
-    private static Task<Java.Lang.Object> ToAwaitableTask(global::Android.Gms.Tasks.Task task)
+    public void Dispose()
     {
-        var taskCompletionSource = new TaskCompletionSource<Java.Lang.Object>();
-        var taskCompleteListener = new TaskCompleteListener(taskCompletionSource);
-        task.AddOnCompleteListener(taskCompleteListener);
-
-        return taskCompletionSource.Task;
+        ReleaseUnmanagedResources();
+        GC.SuppressFinalize(this);
     }
 
-    public class OnFailureListener : Java.Lang.Object, IOnFailureListener
+    ~OcrImplementation()
     {
-        public void OnFailure(Java.Lang.Exception e)
-        {
-            Log.Debug(nameof(OcrImplementation), e.ToString());
-        }
-    }
-
-    public class OnSuccessListener : Java.Lang.Object, IOnSuccessListener
-    {
-        public void OnSuccess(Java.Lang.Object result)
-        {
-        }
-    }
-
-    internal class TaskCompleteListener(TaskCompletionSource<Java.Lang.Object> tcs) : Java.Lang.Object, IOnCompleteListener
-    {
-        private readonly TaskCompletionSource<Java.Lang.Object> _taskCompletionSource = tcs;
-
-        public void OnComplete(global::Android.Gms.Tasks.Task task)
-        {
-            if (task.IsCanceled)
-            {
-                _taskCompletionSource.SetCanceled();
-            }
-            else if (task.IsSuccessful)
-            {
-                _taskCompletionSource.SetResult(task.Result);
-            }
-            else
-            {
-                _taskCompletionSource.SetException(task.Exception);
-            }
-        }
+        ReleaseUnmanagedResources();
     }
 }
