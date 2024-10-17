@@ -18,13 +18,13 @@
                 Clicked="OpenFromCameraBtn_Clicked"
                 MaximumHeightRequest="100"
                 MaximumWidthRequest="200"
-                Text="From Camera .." />
+                Text="From Camera ..." />
             <Button
                 x:Name="OpenFromCameraUseEventBtn"
                 Clicked="OpenFromCameraUseEventBtn_Clicked"
                 MaximumHeightRequest="100"
                 MaximumWidthRequest="200"
-                Text="From Camera (Use Event) .." />
+                Text="From Camera (Use Event) ..." />
         </HorizontalStackLayout>
         <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
             <Button
@@ -32,20 +32,20 @@
                 Clicked="OpenFromFileBtn_Clicked"
                 MaximumHeightRequest="100"
                 MaximumWidthRequest="200"
-                Text="From File .." />
+                Text="From File ..." />
             <Button
                 x:Name="OpenFromFileUseEventBtn"
                 Clicked="OpenFromFileUseEventBtn_Clicked"
                 MaximumHeightRequest="100"
                 MaximumWidthRequest="200"
-                Text="From File (Use Event) .." />
+                Text="From File (Use Event) ..." />
         </HorizontalStackLayout>
         <Label
             x:Name="ResultLbl"
             BackgroundColor="{StaticResource White}"
             HorizontalOptions="Center"
             MinimumHeightRequest="200"
-            Text="Waiting for results .." />
+            Text="Waiting for results ..." />
         <Button
             x:Name="ClearBtn"
             Clicked="ClearBtn_Clicked"

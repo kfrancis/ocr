@@ -2,7 +2,7 @@ using Plugin.Maui.OCR;
 
 namespace Plugin.Maui.Feature.Sample;
 
-public partial class MainPage : ContentPage
+public partial class MainPage
 {
     private readonly IOcrService _ocr;
 
@@ -32,14 +32,16 @@ public partial class MainPage : ContentPage
         {
             var photo = await MediaPicker.Default.CapturePhotoAsync();
 
-            if (photo != null)
+            if (photo == null)
             {
-                var result = await ProcessPhoto(photo);
-
-                ResultLbl.Text = result.AllText;
-
-                ClearBtn.IsEnabled = true;
+                return;
             }
+
+            var result = await ProcessPhoto(photo);
+
+            ResultLbl.Text = result.AllText;
+
+            ClearBtn.IsEnabled = true;
         }
         else
         {
@@ -53,15 +55,19 @@ public partial class MainPage : ContentPage
         {
             var photo = await MediaPicker.Default.CapturePhotoAsync();
 
-            if (photo != null)
+            if (photo == null)
             {
-                _ocr.RecognitionCompleted += (s, e) =>
-                {
-                    ResultLbl.Text = e.Result.AllText;
-                    ClearBtn.IsEnabled = true;
-                };
-                await StartProcessingPhoto(photo);
+                return;
             }
+
+            _ocr.RecognitionCompleted += (_, c) =>
+            {
+                ResultLbl.Text = c is { IsSuccessful: true, Result: not null } ? c.Result.AllText : $"Error: {(!string.IsNullOrEmpty(c.ErrorMessage) ? c.ErrorMessage : "Unkown")}";
+
+                ClearBtn.IsEnabled = true;
+            };
+
+            await StartProcessingPhoto(photo);
         }
         else
         {
@@ -92,12 +98,13 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        _ocr.RecognitionCompleted += (s, c) =>
+        _ocr.RecognitionCompleted += (_, c) =>
         {
-            ResultLbl.Text = c is { IsSuccessful: true, Result: not null } ? c.Result.AllText : $"Error: {c.ErrorMessage}";
+            ResultLbl.Text = c is { IsSuccessful: true, Result: not null } ? c.Result.AllText : $"Error: {(!string.IsNullOrEmpty(c.ErrorMessage) ? c.ErrorMessage : "Unkown")}";
 
             ClearBtn.IsEnabled = true;
         };
+
         await StartProcessingPhoto(photo);
     }
 
@@ -109,7 +116,7 @@ public partial class MainPage : ContentPage
     private async Task<OcrResult> ProcessPhoto(FileResult photo)
     {
         // Open a stream to the photo
-        using var sourceStream = await photo.OpenReadAsync();
+        await using var sourceStream = await photo.OpenReadAsync();
 
         // Create a byte array to hold the image data
         var imageData = new byte[sourceStream.Length];
@@ -117,7 +124,12 @@ public partial class MainPage : ContentPage
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         // Read the stream into the byte array
-        await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
+        var dataLength = await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token).ConfigureAwait(false);
+
+        if (dataLength <= 0)
+        {
+            throw new InvalidOperationException("No image bytes");
+        }
 
         var options = new OcrOptions.Builder().SetTryHard(TryHardSwitch.IsToggled).Build();
 
@@ -133,7 +145,7 @@ public partial class MainPage : ContentPage
     private async Task StartProcessingPhoto(FileResult photo)
     {
         // Open a stream to the photo
-        using var sourceStream = await photo.OpenReadAsync();
+        await using var sourceStream = await photo.OpenReadAsync();
 
         // Create a byte array to hold the image data
         var imageData = new byte[sourceStream.Length];
@@ -141,7 +153,12 @@ public partial class MainPage : ContentPage
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         // Read the stream into the byte array
-        await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
+        var dataLength = await sourceStream.ReadAsync(imageData, cancellationTokenSource.Token);
+
+        if (dataLength <= 0)
+        {
+            throw new InvalidOperationException("No image bytes");
+        }
 
         // Process the image data using the OCR service
         await _ocr.StartRecognizeTextAsync(imageData, new OcrOptions.Builder().SetTryHard(TryHardSwitch.IsToggled).Build(), cancellationTokenSource.Token);
