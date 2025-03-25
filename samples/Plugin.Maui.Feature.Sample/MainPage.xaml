@@ -295,7 +295,7 @@
                 Grid.Column="0"
                 Clicked="EnhanceImageBtn_Clicked"
                 IsEnabled="{Binding Source={x:Reference CapturedImage}, Path=Source, Converter={toolkit:IsNotNullConverter}}"
-                Text="Enhance Image">
+                Text="Use OpenCV">
                 <Button.ImageSource>
                     <FontImageSource
                         FontFamily="Icon"

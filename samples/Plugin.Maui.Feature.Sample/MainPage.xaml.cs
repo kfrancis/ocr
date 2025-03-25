@@ -4,6 +4,11 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Color = Microsoft.Maui.Graphics.Color;
 using Image = SixLabors.ImageSharp.Image;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
+using Emgu.CV.XPhoto;
 
 namespace Plugin.Maui.Feature.Sample;
 
@@ -246,7 +251,7 @@ public partial class MainPage
             try
             {
                 // Try different preprocessing parameters
-                _preprocessedImageData = await ApplyAdvancedPreprocessing(_originalImageData);
+                _preprocessedImageData = ApplyAdvancedPreprocessing(_originalImageData);
 
                 // Display the enhanced image
                 await DisplayImage(_preprocessedImageData);
@@ -440,34 +445,78 @@ public partial class MainPage
         return resultMs.ToArray();
     }
 
-    private static async Task<byte[]> ApplyAdvancedPreprocessing(byte[] imageData)
+    private static byte[] ApplyAdvancedPreprocessing(byte[] imageData)
     {
-        await using var ms = new MemoryStream(imageData);
-        using var image = await Image.LoadAsync<L8>(ms);
+        // Load image as grayscale
+        using var grayscaled = new Mat();
+        CvInvoke.Imdecode(imageData, ImreadModes.Grayscale, grayscaled);
 
-        const int MaxDimension = 2000; // Higher resolution for better detail
-        if (image.Width > MaxDimension || image.Height > MaxDimension)
+        // Ensure it's upright first
+        if (grayscaled.Width > grayscaled.Height)
+            CvInvoke.Rotate(grayscaled, grayscaled, RotateFlags.Rotate90Clockwise);
+
+        // 1. Apply CLAHE (adaptive histogram equalization)
+        using var clahed = new Mat();
+        CvInvoke.CLAHE(grayscaled, clipLimit: 2.0, tileGridSize: new System.Drawing.Size(8, 8), clahed);
+
+        // 2. Gaussian Blur to smooth noise slightly
+        CvInvoke.MedianBlur(clahed, clahed, 3);
+
+        //using var deskewed = Deskew(clahed);
+
+        // 3. Adaptive Thresholding (better for uneven lighting)
+        using var thresholded = new Mat();
+        CvInvoke.AdaptiveThreshold(
+            clahed, thresholded, 255,
+            AdaptiveThresholdType.MeanC,
+            ThresholdType.BinaryInv, 15, 10);
+
+        // 4. Morphological Open + Close to remove noise and fill gaps
+        using var morphKernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1));
+        CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Open, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
+        CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Close, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
+
+        // Return as byte array
+        return thresholded.ToImage<Gray, byte>().ToJpegData();
+    }
+
+    private static Mat Deskew(Mat src)
+    {
+        var isPortrait = src.Height > src.Width;
+        if (!isPortrait)
         {
-            var ratio = Math.Min((float)MaxDimension / image.Width, (float)MaxDimension / image.Height);
-            var newWidth = (int)(image.Width * ratio);
-            var newHeight = (int)(image.Height * ratio);
-            image.Mutate(x => x.Resize(newWidth, newHeight));
+            // Rotate 90 degrees clockwise to get back to portrait
+            CvInvoke.Rotate(src, src, RotateFlags.Rotate90Clockwise);
         }
 
-        // Apply more advanced preprocessing for difficult images
-        image.Mutate(x => x
-                .Contrast(1.4f) // Higher contrast
-                .MedianBlur(1, true) // Better noise reduction while preserving edges
-                .BinaryThreshold(0.55f) // Lower threshold can help with faded text
-        );
+        // Threshold to detect edges
+        using var binary = new Mat();
+        CvInvoke.Threshold(src, binary, 0, 255, ThresholdType.BinaryInv | ThresholdType.Otsu);
 
-        // Add a border to help OCR engines recognize boundaries
-        image.Mutate(x => x.Pad(20, 20));
+        // Find contours
+        using var contours = new VectorOfVectorOfPoint();
+        CvInvoke.FindContours(binary, contours, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
-        // Convert back to byte array
-        using var resultMs = new MemoryStream();
-        await image.SaveAsPngAsync(resultMs);
-        return resultMs.ToArray();
+        // Combine all contour points into one big array
+        var allPoints = contours.ToArrayOfArray().SelectMany(p => p).ToArray();
+        if (allPoints.Length == 0)
+            return src.Clone(); // No contours found
+
+        using var pts = new VectorOfPoint(allPoints);
+        var box = CvInvoke.MinAreaRect(pts);
+
+        double angle = box.Angle;
+        if (angle < -45) angle += 90;
+
+        // Rotate image to correct angle
+        var center = new System.Drawing.PointF(src.Width / 2f, src.Height / 2f);
+        using var rotationMatrix = new Mat();
+        CvInvoke.GetRotationMatrix2D(center, angle, 1.0, rotationMatrix);
+
+        using var rotated = new Mat();
+        CvInvoke.WarpAffine(src, rotated, rotationMatrix, src.Size, Inter.Linear, Warp.Default, BorderType.Constant, new MCvScalar(255));
+
+        return rotated.Clone();
     }
 
     /// <summary>
