@@ -378,7 +378,7 @@ class OcrImplementation : IOcrService
             if (!ocrHandler.Perform([recognizeTextRequest], out var handlerError) && handlerError != null && !string.IsNullOrEmpty(handlerError.LocalizedDescription))
             {
                 RecognitionCompleted(this, new OcrCompletedEventArgs(null, handlerError.LocalizedDescription));
-            } 
+            }
         }
         catch (Exception ex)
         {

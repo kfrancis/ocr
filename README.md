@@ -1,18 +1,14 @@
 ![](nuget.png)
-# Plugin.Xamarin.OCR | Plugin.Maui.OCR
+# Plugin.Maui.OCR | Plugin.Xamarin.OCR
 
-`Plugin.Xamarin.OCR` and `Plugin.Maui.OCR` provide the ability to do simple text from image OCR using nothing but platform APIs.
-
-## Should you use this yet?
-
-**YES**. Let me know how it works for you.
+`Plugin.Maui.OCR` and `Plugin.Xamarin.OCR` provide the ability to do simple text from image OCR using nothing but platform APIs.
 
 ## What Works Matrix
 
 | Platform | iOS | Android | Windows | macOS |
 |----------|-----|---------|---------|-------|
-| Xamarin  | Yes |   Yes   |   N/A   |  N/A  |
 | MAUI     | Yes |   Yes   |   Yes   |  Yes  |
+| Xamarin  | Yes |   Yes   |   N/A   |  N/A  |
 
 [![Build for CI](https://github.com/kfrancis/ocr/actions/workflows/ci.yml/badge.svg)](https://github.com/kfrancis/ocr/actions/workflows/ci.yml)
 
@@ -26,6 +22,12 @@ of native dependencies can be a real pain to work with.
 ### Xamarin??
 
 Well, I still have to maintain a Xamarin app that uses Tesseract and I'm tired of all the problems that come with it. I want to make it easier for myself and others to do OCR in their apps.
+
+### Example App
+
+Here's an example of what the OCR library can do. This is the processing of race results receipt, which is a typical dot-matrix printed document. The OCR is able to read the text from the image.
+
+![Example](example.gif)
 
 ## Install Plugin
 
