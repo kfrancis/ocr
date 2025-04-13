@@ -67,7 +67,8 @@ internal class OcrImplementation : IOcrService, IDisposable
         }
 
         foreach (var match in from config in options.PatternConfigs
-                              let match = OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config)
+                              let matches = OcrPatternMatcher.ExtractPatterns(ocrResult.AllText, config)
+                              from match in matches
                               where !string.IsNullOrEmpty(match)
                               select match)
         {
