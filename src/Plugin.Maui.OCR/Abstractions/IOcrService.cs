@@ -85,6 +85,7 @@ public static class OcrPatternMatcher
     /// <returns>
     /// The extracted pattern, or null if no pattern was found or the pattern failed validation.
     /// </returns>
+    [Obsolete("Use ExtractPatterns(string, OcrPatternConfig) instead. This method will be removed in a future version.")]
     public static string? ExtractPattern(string input, OcrPatternConfig? config)
     {
         if (string.IsNullOrEmpty(config?.RegexPattern))
@@ -101,6 +102,41 @@ public static class OcrPatternMatcher
         }
 
         return null;
+    }
+    /// <summary>
+    /// Extracts all patterns from the input text using the provided configuration.
+    /// </summary>
+    /// <param name="input">
+    /// The input text to extract the patterns from.
+    /// </param>
+    /// <param name="config">
+    /// The configuration to use for pattern extraction.
+    /// </param>
+    /// <returns>
+    /// All extracted patterns, or an empty list if no pattern was found or all patterns failed validation.
+    /// </returns>
+    public static List<string> ExtractPatterns(string input, OcrPatternConfig? config)
+    {
+        List<string> result = [];
+        if (string.IsNullOrEmpty(config?.RegexPattern))
+        {
+            return result;
+        }
+
+        var regex = new Regex(config.RegexPattern);
+        MatchCollection matches = regex.Matches(input);
+
+        foreach (Match match in matches)
+        {
+            if (match.Success && config.ValidationFunction(match.Value))
+            {
+                result.Add(match.Value);
+            }
+
+        }
+
+
+        return result;
     }
 }
 
