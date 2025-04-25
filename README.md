@@ -3,6 +3,20 @@
 
 `Plugin.Maui.OCR` and `Plugin.Xamarin.OCR` provide the ability to do simple text from image OCR using nothing but platform APIs.
 
+## Documentation
+
+Check out our [detailed tutorial](./tutorial/index.md) for implementation guides and examples.
+
+Additional documentation:
+- [IOcrService Interface](./tutorial/01_iocrservice_interface_.md)
+- [Ocr Result](./tutorial/02_ocrresult_.md)
+- [Ocr Options](./tutorial/03_ocroptions_.md)
+- [Pattern Matcher](./tutorial/04_ocrpatternmatcher_.md)
+- [Ocr Implementation](./tutorial/05_ocrimplementation_.md)
+- [Plugin](./tutorial/06_ocrplugin_.md)
+- [UseOcr Extension Method](./tutorial/07_useocr_extension_method_.md)
+- [Sample App](./tutorial/08_mainpage__sample_app__.md)
+
 ## What Works Matrix
 
 | Platform | iOS | Android | Windows | macOS |
