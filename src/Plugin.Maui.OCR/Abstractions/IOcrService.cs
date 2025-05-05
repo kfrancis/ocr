@@ -95,7 +95,7 @@ public static class OcrPatternMatcher
         var regex = new Regex(config.RegexPattern);
         var match = regex.Match(input);
 
-        if (match.Success && config.ValidationFunction(match.Value))
+        if (match.Success && (config.ValidationFunction?.Invoke(match.Value) ?? true))
         {
             return match.Value;
         }
