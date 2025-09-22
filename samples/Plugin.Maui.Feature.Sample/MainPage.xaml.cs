@@ -230,7 +230,7 @@ public partial class MainPage
             await Clipboard.SetTextAsync(plainText);
 
             // Optional: Show feedback to user
-            await DisplayAlert("Success", "Text copied to clipboard", "OK");
+            await DisplayAlertAsync("Success", "Text copied to clipboard", "OK");
         }
     }
 
@@ -266,7 +266,7 @@ public partial class MainPage
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Failed to enhance image: {ex.Message}", "OK");
+                await DisplayAlertAsync("Error", $"Failed to enhance image: {ex.Message}", "OK");
             }
             finally
             {
@@ -297,7 +297,7 @@ public partial class MainPage
         }
         else
         {
-            await DisplayAlert("Sorry", "Image capture is not supported on this device.", "OK");
+            await DisplayAlertAsync("Sorry", "Image capture is not supported on this device.", "OK");
         }
     }
 
@@ -317,17 +317,17 @@ public partial class MainPage
         }
         else
         {
-            await DisplayAlert("Sorry", "Image capture is not supported on this device.", "OK");
+            await DisplayAlertAsync("Sorry", "Image capture is not supported on this device.", "OK");
         }
     }
 
     private async void OpenFromFileBtn_Clicked(object sender, EventArgs e)
     {
-        var photo = await MediaPicker.Default.PickPhotoAsync();
+        var lsPhoto = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions() { SelectionLimit = 1 });
 
-        if (photo != null)
+        if (lsPhoto != null && lsPhoto.Count != 0)
         {
-            var result = await ProcessPhoto(photo);
+            var result = await ProcessPhoto(lsPhoto.FirstOrDefault());
             ResultLbl.Text = result.AllText;
             NoImagePlaceholder.IsVisible = false;
         }
@@ -335,15 +335,15 @@ public partial class MainPage
 
     private async void OpenFromFileUseEventBtn_Clicked(object sender, EventArgs e)
     {
-        var photo = await MediaPicker.Default.PickPhotoAsync();
+        var lsPhoto = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions() { SelectionLimit = 1 });
 
-        if (photo == null)
+        if (lsPhoto == null || lsPhoto.Count == 0)
         {
             return;
         }
 
         _ocr.RecognitionCompleted += OnRecognitionCompleted;
-        await StartProcessingPhoto(photo);
+        await StartProcessingPhoto(lsPhoto.FirstOrDefault());
     }
 
     private void OnRecognitionCompleted(object sender, OcrCompletedEventArgs e)
@@ -472,7 +472,7 @@ public partial class MainPage
             ThresholdType.BinaryInv, 15, 10);
 
         // 4. Morphological Open + Close to remove noise and fill gaps
-        using var morphKernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1));
+        using var morphKernel = CvInvoke.GetStructuringElement(MorphShapes.Rectangle, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1));
         CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Open, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
         CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Close, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
 

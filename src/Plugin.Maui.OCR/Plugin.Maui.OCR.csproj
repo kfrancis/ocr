@@ -141,7 +141,7 @@
     <PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.4.2.3" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
     <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.4.2.3" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
     <PackageReference Include="Xamarin.Google.MLKit.TextRecognition" Version="116.0.1.5" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
-    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.8.8.1" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
+    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.8.9" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="Roslynator.Analyzers" Version="4.12.8">
