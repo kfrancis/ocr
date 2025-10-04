@@ -91,7 +91,7 @@ jobs:
         cp ${{ env.NuGetDirectory }}/*.snupkg ${{ env.NuGetDirectory }}/artifacts
 
     # Publish the NuGet package as an artifact, so they can be used in the following jobs
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: nuget
         if-no-files-found: error
@@ -109,7 +109,7 @@ jobs:
         uses: actions/setup-dotnet@v4
 
       # Download the NuGet package created in the previous job
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: nuget
           path: ${{ env.NuGetDirectory }}
@@ -142,7 +142,7 @@ jobs:
     needs: [ validate_nuget ]
     steps:
       # Download the NuGet package created in the previous job
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: nuget
           path: ${{ env.NuGetDirectory }}
