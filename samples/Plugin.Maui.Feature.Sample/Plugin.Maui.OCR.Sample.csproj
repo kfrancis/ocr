@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-    <!--<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>-->
+    <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+    <!--<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>-->
     <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-    <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-tizen</TargetFrameworks> -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
     <OutputType>Exe</OutputType>
     <RootNamespace>Plugin.Maui.OCR.Sample</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -35,16 +35,16 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
     <CodesignKey>Apple Development: Created via API (BQQPP4HLY2)</CodesignKey>
     <CodesignProvision>VS: WildCard Development</CodesignProvision>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
     <MtouchDebug>True</MtouchDebug>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-ios|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
     <MtouchDebug>True</MtouchDebug>
   </PropertyGroup>
 
@@ -69,11 +69,14 @@
     <ProjectReference Include="..\..\src\Plugin.Maui.OCR\Plugin.Maui.OCR.csproj" />
     <PackageReference Include="CommunityToolkit.Maui" Version="12.2.0" />
     <PackageReference Include="Emgu.CV.runtime.maui.mini" Version="4.12.0.5764" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Plugin.Toolkit.Fonts.MaterialIcons" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
     <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
       <Version>1.8.9</Version>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Maui.Controls" Version="9.0.110" />
   </ItemGroup>
 </Project>
