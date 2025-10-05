@@ -1,8 +1,6 @@
-
 using Foundation;
-using Plugin.Maui.OCR.Sample;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace Plugin.Maui.OCR.Sample;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

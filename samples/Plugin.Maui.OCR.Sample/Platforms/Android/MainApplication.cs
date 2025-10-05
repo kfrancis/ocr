@@ -1,13 +1,12 @@
 using Android.App;
 using Android.Runtime;
-using Plugin.Maui.OCR.Sample;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace Plugin.Maui.OCR.Sample;
 
 [Application]
 public class MainApplication : MauiApplication
 {
-	public MainApplication(IntPtr handle, JniHandleOwnership ownership)
+	public MainApplication(nint handle, JniHandleOwnership ownership)
 		: base(handle, ownership)
 	{
 	}
