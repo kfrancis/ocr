@@ -75,8 +75,4 @@
       <Version>1.8.9</Version>
     </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.Maui.Controls" Version="9.0.110" />
-  </ItemGroup>
 </Project>

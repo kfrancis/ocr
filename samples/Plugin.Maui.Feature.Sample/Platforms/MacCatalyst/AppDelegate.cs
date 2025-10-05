@@ -1,4 +1,6 @@
-﻿using Foundation;
+
+using Foundation;
+using Plugin.Maui.OCR.Sample;
 
 namespace Plugin.Maui.Feature.Sample;
 

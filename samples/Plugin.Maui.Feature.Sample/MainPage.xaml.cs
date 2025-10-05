@@ -1,26 +1,25 @@
-using Plugin.Maui.OCR;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Color = Microsoft.Maui.Graphics.Color;
 using Image = SixLabors.ImageSharp.Image;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using Emgu.CV.Util;
-using Emgu.CV.XPhoto;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace Plugin.Maui.OCR.Sample;
 
 public partial class MainPage
 {
     private readonly IOcrService _ocr;
+    private bool _isPreviewExpanded;
+    private bool _isResultsExpanded;
     private byte[] _originalImageData;
-    private byte[] _preprocessedImageData;
-    private bool _isResultsExpanded = false;
-    private bool _isPreviewExpanded = false;
     private GridLength _originalLeftColumnWidth;
     private GridLength _originalRightColumnWidth;
+    private byte[] _preprocessedImageData;
 
     public MainPage(IOcrService feature)
     {
@@ -43,7 +42,7 @@ public partial class MainPage
     {
         // Only expand if we tap the header or empty space, not on the text content
         var tapPosition = e.GetPosition(ResultsPanel);
-        if (tapPosition != null && tapPosition.Value.Y < 50)
+        if (tapPosition is { Y: < 50 })
         {
             ToggleResultsPanel();
         }
@@ -53,7 +52,7 @@ public partial class MainPage
     {
         // Only expand if we tap the header or empty space
         var tapPosition = e.GetPosition(PreviewPanel);
-        if (tapPosition != null && tapPosition.Value.Y < 50)
+        if (tapPosition is { Y: < 50 })
         {
             TogglePreviewPanel();
         }
@@ -87,7 +86,7 @@ public partial class MainPage
             PreviewPanel.IsVisible = false;
             _isResultsExpanded = true;
 
-            // If other panel was expanded, unexpand it
+            // If other panel was expanded, collapse it
             if (_isPreviewExpanded)
             {
                 _isPreviewExpanded = false;
@@ -127,7 +126,7 @@ public partial class MainPage
             ResultsPanel.IsVisible = false;
             _isPreviewExpanded = true;
 
-            // If other panel was expanded, unexpand it
+            // If other panel was expanded, collapse it
             if (_isResultsExpanded)
             {
                 _isResultsExpanded = false;
@@ -160,9 +159,16 @@ public partial class MainPage
 
     protected override async void OnAppearing()
     {
-        base.OnAppearing();
+        try
+        {
+            base.OnAppearing();
 
-        await _ocr.InitAsync();
+            await _ocr.InitAsync();
+        }
+        catch (Exception)
+        {
+            await DisplayAlertAsync("Error", "Failed to initialize OCR service", "OK");
+        }
     }
 
     private void CameraTabBtn_Clicked(object sender, EventArgs e)
@@ -188,7 +194,7 @@ public partial class MainPage
     }
 
     /// <summary>
-    /// Shows the loading overlay with a custom message
+    ///     Shows the loading overlay with a custom message
     /// </summary>
     private void ShowLoading(string message = "Processing...")
     {
@@ -200,7 +206,7 @@ public partial class MainPage
     }
 
     /// <summary>
-    /// Hides the loading overlay
+    ///     Hides the loading overlay
     /// </summary>
     private void HideLoading()
     {
@@ -223,14 +229,21 @@ public partial class MainPage
 
     private async void CopyBtn_Clicked(object sender, EventArgs e)
     {
-        if (ResultLbl.Text != "Waiting for results ...")
+        try
         {
-            // Remove any HTML tags if present
-            var plainText = ResultLbl.Text.Replace("<b>", "").Replace("</b>", "");
-            await Clipboard.SetTextAsync(plainText);
+            if (ResultLbl.Text != "Waiting for results ...")
+            {
+                // Remove any HTML tags if present
+                var plainText = ResultLbl.Text.Replace("<b>", "").Replace("</b>", "");
+                await Clipboard.SetTextAsync(plainText);
 
-            // Optional: Show feedback to user
-            await DisplayAlertAsync("Success", "Text copied to clipboard", "OK");
+                // Optional: Show feedback to user
+                await DisplayAlertAsync("Success", "Text copied to clipboard", "OK");
+            }
+        }
+        catch (Exception)
+        {
+            await DisplayAlertAsync("Error", "Failed to copy text to clipboard", "OK");
         }
     }
 
@@ -274,6 +287,10 @@ public partial class MainPage
                 EnhanceImageBtn.IsEnabled = true;
             }
         }
+        catch (Exception)
+        {
+            await DisplayAlertAsync("Error", "Failed to enhance image", "OK");
+        }
         finally
         {
             HideLoading();
@@ -282,68 +299,98 @@ public partial class MainPage
 
     private async void OpenFromCameraBtn_Clicked(object sender, EventArgs e)
     {
-        if (MediaPicker.Default.IsCaptureSupported)
+        try
         {
-            var photo = await MediaPicker.Default.CapturePhotoAsync();
-
-            if (photo == null)
+            if (MediaPicker.Default.IsCaptureSupported)
             {
-                return;
-            }
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
 
-            var result = await ProcessPhoto(photo);
-            ResultLbl.Text = result.AllText;
-            NoImagePlaceholder.IsVisible = false;
+                if (photo == null)
+                {
+                    return;
+                }
+
+                var result = await ProcessPhoto(photo);
+                ResultLbl.Text = result.AllText;
+                NoImagePlaceholder.IsVisible = false;
+            }
+            else
+            {
+                await DisplayAlertAsync("Sorry", "Image capture is not supported on this device.", "OK");
+            }
         }
-        else
+        catch (Exception)
         {
-            await DisplayAlertAsync("Sorry", "Image capture is not supported on this device.", "OK");
+            await DisplayAlertAsync("Error", "Failed to open or process the image.", "OK");
         }
     }
 
     private async void OpenFromCameraUseEventBtn_Clicked(object sender, EventArgs e)
     {
-        if (MediaPicker.Default.IsCaptureSupported)
+        try
         {
-            var photo = await MediaPicker.Default.CapturePhotoAsync();
-
-            if (photo == null)
+            if (MediaPicker.Default.IsCaptureSupported)
             {
-                return;
-            }
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
 
-            _ocr.RecognitionCompleted += OnRecognitionCompleted;
-            await StartProcessingPhoto(photo);
+                if (photo == null)
+                {
+                    return;
+                }
+
+                _ocr.RecognitionCompleted += OnRecognitionCompleted;
+                await StartProcessingPhoto(photo);
+            }
+            else
+            {
+                await DisplayAlertAsync("Sorry", "Image capture is not supported on this device.", "OK");
+            }
         }
-        else
+        catch (Exception)
         {
-            await DisplayAlertAsync("Sorry", "Image capture is not supported on this device.", "OK");
+            await DisplayAlertAsync("Error", "Failed to open or process the image.", "OK");
         }
     }
 
     private async void OpenFromFileBtn_Clicked(object sender, EventArgs e)
     {
-        var lsPhoto = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions() { SelectionLimit = 1 });
-
-        if (lsPhoto != null && lsPhoto.Count != 0)
+        try
         {
-            var result = await ProcessPhoto(lsPhoto.FirstOrDefault());
-            ResultLbl.Text = result.AllText;
-            NoImagePlaceholder.IsVisible = false;
+            var lsPhoto = await MediaPicker.Default.PickPhotoAsync();
+
+            if (lsPhoto != null)
+            {
+                var result = await ProcessPhoto(lsPhoto);
+                ResultLbl.Text = result.AllText;
+                NoImagePlaceholder.IsVisible = false;
+            }
+        }
+        catch (Exception)
+        {
+            // Show a generic DisplayAlertAsync
+            await DisplayAlertAsync("Error", "Failed to open or process the image.", "OK");
         }
     }
 
     private async void OpenFromFileUseEventBtn_Clicked(object sender, EventArgs e)
     {
-        var lsPhoto = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions() { SelectionLimit = 1 });
-
-        if (lsPhoto == null || lsPhoto.Count == 0)
+        try
         {
-            return;
-        }
+            var lsPhoto = await MediaPicker.Default.PickPhotoAsync();
 
-        _ocr.RecognitionCompleted += OnRecognitionCompleted;
-        await StartProcessingPhoto(lsPhoto.FirstOrDefault());
+            if (lsPhoto == null)
+            {
+                return;
+            }
+
+            _ocr.RecognitionCompleted += OnRecognitionCompleted;
+            await StartProcessingPhoto(lsPhoto);
+        }
+        catch (Exception)
+        {
+            // Show a generic DisplayAlertAsync
+            await DisplayAlertAsync("Error", "Failed to open or process the image.", "OK");
+        }
     }
 
     private void OnRecognitionCompleted(object sender, OcrCompletedEventArgs e)
@@ -432,9 +479,9 @@ public partial class MainPage
 
         // Apply preprocessing steps
         image.Mutate(x => x
-                .Contrast(1.2f)         // Slight contrast boost
-                .GaussianBlur(1.1f)     // Slight blur to reduce dot matrix noise
-                .BinaryThreshold(0.45f)  // Binarize at slightly lower threshold to preserve thin text
+                .Contrast(1.2f) // Slight contrast boost
+                .GaussianBlur(1.1f) // Slight blur to reduce dot matrix noise
+                .BinaryThreshold(0.45f) // Binarize at slightly lower threshold to preserve thin text
         );
 
         image.Mutate(x => x.Pad(10, 10));
@@ -453,16 +500,16 @@ public partial class MainPage
 
         // Ensure it's upright first
         if (grayscaled.Width > grayscaled.Height)
+        {
             CvInvoke.Rotate(grayscaled, grayscaled, RotateFlags.Rotate90Clockwise);
+        }
 
         // 1. Apply CLAHE (adaptive histogram equalization)
         using var clahed = new Mat();
-        CvInvoke.CLAHE(grayscaled, clipLimit: 2.0, tileGridSize: new System.Drawing.Size(8, 8), clahed);
+        CvInvoke.CLAHE(grayscaled, 2.0, new Size(8, 8), clahed);
 
         // 2. Gaussian Blur to smooth noise slightly
         CvInvoke.MedianBlur(clahed, clahed, 3);
-
-        //using var deskewed = Deskew(clahed);
 
         // 3. Adaptive Thresholding (better for uneven lighting)
         using var thresholded = new Mat();
@@ -472,51 +519,15 @@ public partial class MainPage
             ThresholdType.BinaryInv, 15, 10);
 
         // 4. Morphological Open + Close to remove noise and fill gaps
-        using var morphKernel = CvInvoke.GetStructuringElement(MorphShapes.Rectangle, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1));
-        CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Open, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
-        CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Close, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
+        using var morphKernel =
+            CvInvoke.GetStructuringElement(MorphShapes.Rectangle, new Size(2, 2), new Point(-1, -1));
+        CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Open, morphKernel, new Point(-1, -1), 1,
+            BorderType.Reflect, new MCvScalar());
+        CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Close, morphKernel, new Point(-1, -1), 1,
+            BorderType.Reflect, new MCvScalar());
 
         // Return as byte array
         return thresholded.ToImage<Gray, byte>().ToJpegData();
-    }
-
-    private static Mat Deskew(Mat src)
-    {
-        var isPortrait = src.Height > src.Width;
-        if (!isPortrait)
-        {
-            // Rotate 90 degrees clockwise to get back to portrait
-            CvInvoke.Rotate(src, src, RotateFlags.Rotate90Clockwise);
-        }
-
-        // Threshold to detect edges
-        using var binary = new Mat();
-        CvInvoke.Threshold(src, binary, 0, 255, ThresholdType.BinaryInv | ThresholdType.Otsu);
-
-        // Find contours
-        using var contours = new VectorOfVectorOfPoint();
-        CvInvoke.FindContours(binary, contours, null, RetrType.External, ChainApproxMethod.ChainApproxSimple);
-
-        // Combine all contour points into one big array
-        var allPoints = contours.ToArrayOfArray().SelectMany(p => p).ToArray();
-        if (allPoints.Length == 0)
-            return src.Clone(); // No contours found
-
-        using var pts = new VectorOfPoint(allPoints);
-        var box = CvInvoke.MinAreaRect(pts);
-
-        double angle = box.Angle;
-        if (angle < -45) angle += 90;
-
-        // Rotate image to correct angle
-        var center = new System.Drawing.PointF(src.Width / 2f, src.Height / 2f);
-        using var rotationMatrix = new Mat();
-        CvInvoke.GetRotationMatrix2D(center, angle, 1.0, rotationMatrix);
-
-        using var rotated = new Mat();
-        CvInvoke.WarpAffine(src, rotated, rotationMatrix, src.Size, Inter.Linear, Warp.Default, BorderType.Constant, new MCvScalar(255));
-
-        return rotated.Clone();
     }
 
     /// <summary>
@@ -550,5 +561,13 @@ public partial class MainPage
             _preprocessedImageData,
             new OcrOptions.Builder().SetTryHard(TryHardSwitch.IsToggled).Build(),
             cancellationTokenSource.Token);
+    }
+
+    // Add this method to your MainPage class to fix CS0103
+    private Task DisplayAlertAsync(string title, string message, string cancel)
+    {
+        // If MainPage inherits from ContentPage, you can call DisplayAlert directly.
+        // Otherwise, use Application.Current.MainPage.DisplayAlert.
+        return Application.Current?.Windows[0].Page?.DisplayAlert(title, message, cancel) ?? Task.CompletedTask;
     }
 }

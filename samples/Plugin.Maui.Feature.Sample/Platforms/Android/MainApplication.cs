@@ -1,5 +1,6 @@
-﻿using Android.App;
+using Android.App;
 using Android.Runtime;
+using Plugin.Maui.OCR.Sample;
 
 namespace Plugin.Maui.Feature.Sample;
 

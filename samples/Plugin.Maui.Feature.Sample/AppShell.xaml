@@ -1,13 +1,14 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="Plugin.Maui.Feature.Sample.AppShell"
+    x:Class="Plugin.Maui.OCR.Sample.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Plugin.Maui.Feature.Sample"
+    xmlns:sample="clr-namespace:Plugin.Maui.OCR.Sample"
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
         Title="Feature Plugin"
-        ContentTemplate="{DataTemplate pages:MainPage}" />
+        ContentTemplate="{DataTemplate sample:MainPage}" />
 
 </Shell>
