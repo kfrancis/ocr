@@ -1,51 +1,53 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="Plugin.Maui.Feature.Sample.MainPage"
+<controls:ContentPage
+    x:Class="Plugin.Maui.OCR.Sample.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:xaml="clr-namespace:Microsoft.Maui.Controls.Xaml;assembly=Microsoft.Maui.Controls.Xaml"
     Title="OCR Plugin"
-    BackgroundColor="{AppThemeBinding Light={StaticResource White},
-    Dark={StaticResource Black}}">
+    BackgroundColor="{xaml:AppThemeBinding Light={xaml:StaticResource White},
+                                           Dark={xaml:StaticResource Black}}">
 
-    <Grid
+    <controls:Grid
         Padding="16"
         RowDefinitions="Auto,*,Auto"
         RowSpacing="16">
 
         <!--  Header Section  -->
-        <VerticalStackLayout Grid.Row="0" Spacing="12">
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
-                <Label
+        <controls:VerticalStackLayout controls:Grid.Row="0" Spacing="12">
+            <controls:HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
+                <controls:Label
                     FontAttributes="Bold"
                     Text="Enhanced OCR Mode"
                     VerticalOptions="Center" />
-                <Switch
+                <controls:Switch
                     x:Name="TryHardSwitch"
                     IsToggled="False"
                     OnColor="#6750A4"
                     ThumbColor="White" />
-            </HorizontalStackLayout>
+            </controls:HorizontalStackLayout>
 
             <!--  Source Selection Tab Control  -->
-            <Frame
+            <Border
                 Padding="0"
-                BorderColor="#E0E0E0"
-                CornerRadius="8"
-                HasShadow="False">
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                Background="#00000000"
+                Stroke="#E0E0E0"
+                StrokeShape="RoundRectangle 8">
+                <controls:Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
                     <!--  Tab Headers  -->
-                    <Button
+                    <controls:Button
                         x:Name="CameraTabBtn"
-                        Grid.Column="0"
+                        controls:Grid.Column="0"
                         BackgroundColor="#6750A4"
                         Clicked="CameraTabBtn_Clicked"
                         CornerRadius="0"
                         Text="Camera"
                         TextColor="White" />
-                    <Button
+                    <controls:Button
                         x:Name="FileTabBtn"
-                        Grid.Column="1"
+                        controls:Grid.Column="1"
                         BackgroundColor="#E0E0E0"
                         Clicked="FileTabBtn_Clicked"
                         CornerRadius="0"
@@ -53,99 +55,100 @@
                         TextColor="#6750A4" />
 
                     <!--  Tab Content  -->
-                    <Grid
+                    <controls:Grid
                         x:Name="CameraOptions"
-                        Grid.Row="1"
-                        Grid.ColumnSpan="2"
                         Padding="16"
+                        controls:Grid.ColumnSpan="2"
+                        controls:Grid.Row="1"
                         ColumnDefinitions="*,*">
-                        <Button
+                        <controls:Button
                             x:Name="OpenFromCameraBtn"
-                            Grid.Column="0"
                             Margin="4,0"
+                            controls:Grid.Column="0"
                             Clicked="OpenFromCameraBtn_Clicked"
                             Text="No Event">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe3af;"
                                     Color="White" />
-                            </Button.ImageSource>
-                        </Button>
-                        <Button
+                            </controls:Button.ImageSource>
+                        </controls:Button>
+                        <controls:Button
                             x:Name="OpenFromCameraUseEventBtn"
-                            Grid.Column="1"
                             Margin="4,0"
+                            controls:Grid.Column="1"
                             Clicked="OpenFromCameraUseEventBtn_Clicked"
                             Text="Use Event">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe3af;"
                                     Color="White" />
-                            </Button.ImageSource>
-                        </Button>
-                    </Grid>
+                            </controls:Button.ImageSource>
+                        </controls:Button>
+                    </controls:Grid>
 
-                    <Grid
+                    <controls:Grid
                         x:Name="FileOptions"
-                        Grid.Row="1"
-                        Grid.ColumnSpan="2"
                         Padding="16"
+                        controls:Grid.ColumnSpan="2"
+                        controls:Grid.Row="1"
                         ColumnDefinitions="*,*"
                         IsVisible="False">
-                        <Button
+                        <controls:Button
                             x:Name="OpenFromFileBtn"
-                            Grid.Column="0"
                             Margin="4,0"
+                            controls:Grid.Column="0"
                             Clicked="OpenFromFileBtn_Clicked"
                             Text="No Event">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe24d;"
                                     Color="White" />
-                            </Button.ImageSource>
-                        </Button>
-                        <Button
+                            </controls:Button.ImageSource>
+                        </controls:Button>
+                        <controls:Button
                             x:Name="OpenFromFileUseEventBtn"
-                            Grid.Column="1"
                             Margin="4,0"
+                            controls:Grid.Column="1"
                             Clicked="OpenFromFileUseEventBtn_Clicked"
                             Text="Use Event">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe24d;"
                                     Color="White" />
-                            </Button.ImageSource>
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Frame>
-        </VerticalStackLayout>
+                            </controls:Button.ImageSource>
+                        </controls:Button>
+                    </controls:Grid>
+                </controls:Grid>
+            </Border>
+        </controls:VerticalStackLayout>
 
         <!--  Content Section - Expandable Panels  -->
-        <Grid
+        <controls:Grid
             x:Name="ContentPanels"
-            Grid.Row="1"
+            controls:Grid.Row="1"
             ColumnDefinitions="*,*"
             ColumnSpacing="16">
 
             <!--  OCR Results Panel  -->
-            <Frame
+            <Border
                 x:Name="ResultsPanel"
-                Grid.Column="0"
+                Margin="0"
                 Padding="0"
-                BorderColor="#E0E0E0"
-                CornerRadius="8"
-                HasShadow="True">
-                <Grid RowDefinitions="Auto,*">
+                Background="#FFFFFFFF"
+                Shadow="4"
+                Stroke="#E0E0E0"
+                StrokeShape="RoundRectangle 8">
+                <controls:Grid RowDefinitions="Auto,*">
                     <!--  Header with Copy Button  -->
-                    <Grid ColumnDefinitions="*,Auto,Auto">
-                        <Label
-                            Grid.Column="0"
+                    <controls:Grid ColumnDefinitions="*,Auto,Auto">
+                        <controls:Label
                             Padding="12,8"
+                            controls:Grid.Column="0"
                             BackgroundColor="#F5F5F5"
                             FontAttributes="Bold"
                             FontSize="14"
@@ -153,77 +156,81 @@
                             VerticalOptions="Center" />
 
                         <!--  Copy Button in Header  -->
-                        <Button
+                        <controls:Button
                             x:Name="CopyBtn"
-                            Grid.Column="1"
                             Margin="0"
                             Padding="0"
+                            controls:Grid.Column="1"
                             BackgroundColor="Transparent"
                             Clicked="CopyBtn_Clicked"
                             CornerRadius="20"
                             HeightRequest="40"
-                            IsVisible="{Binding Source={x:Reference ResultLbl}, Path=Text, Converter={toolkit:IsNotEqualConverter}, ConverterParameter='Waiting for results ...'}"
+                            IsVisible="{controls:Binding Source={xaml:Reference ResultLbl},
+                                                         Path=Text,
+                                                         Converter={converters:IsNotEqualConverter},
+                                                         ConverterParameter='Waiting for results ...'}"
                             WidthRequest="40">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe14d;"
                                     Color="#6750A4" />
-                            </Button.ImageSource>
-                        </Button>
+                            </controls:Button.ImageSource>
+                        </controls:Button>
 
                         <!--  Expand Button  -->
-                        <Button
+                        <controls:Button
                             x:Name="ExpandResultsBtn"
-                            Grid.Column="2"
                             Margin="0"
                             Padding="0"
+                            controls:Grid.Column="2"
                             BackgroundColor="Transparent"
                             Clicked="ExpandResultsBtn_Clicked"
                             CornerRadius="20"
                             HeightRequest="40"
                             WidthRequest="40">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe5d0;"
                                     Color="#6750A4" />
-                            </Button.ImageSource>
-                        </Button>
-                    </Grid>
+                            </controls:Button.ImageSource>
+                        </controls:Button>
+                    </controls:Grid>
 
                     <!--  Scrollable Content  -->
-                    <ScrollView Grid.Row="1">
-                        <VerticalStackLayout Padding="12">
-                            <Label
+                    <controls:ScrollView controls:Grid.Row="1">
+                        <controls:VerticalStackLayout Padding="12">
+                            <controls:Label
                                 x:Name="ResultLbl"
                                 FontFamily="Monospace"
                                 Text="Waiting for results ..."
                                 TextType="Html" />
-                        </VerticalStackLayout>
-                    </ScrollView>
-                </Grid>
+                        </controls:VerticalStackLayout>
+                    </controls:ScrollView>
+                </controls:Grid>
 
                 <!--  Tap Recognizer for Expanding  -->
-                <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="ResultsPanel_Tapped" />
-                </Frame.GestureRecognizers>
-            </Frame>
+                <Border.GestureRecognizers>
+                    <controls:TapGestureRecognizer Tapped="ResultsPanel_Tapped" />
+                </Border.GestureRecognizers>
+            </Border>
 
             <!--  Image Preview Panel  -->
-            <Frame
+            <Border
                 x:Name="PreviewPanel"
-                Grid.Column="1"
+                Margin="0"
                 Padding="0"
-                BorderColor="#E0E0E0"
-                CornerRadius="8"
-                HasShadow="True">
-                <Grid RowDefinitions="Auto,*">
+                Background="#FFFFFFFF"
+                Shadow="4"
+                Stroke="#E0E0E0"
+                StrokeShape="RoundRectangle 8">
+                <controls:Grid RowDefinitions="Auto,*">
                     <!--  Header with Expand Button  -->
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label
-                            Grid.Column="0"
+                    <controls:Grid ColumnDefinitions="*,Auto">
+                        <controls:Label
                             Padding="12,8"
+                            controls:Grid.Column="0"
                             BackgroundColor="#F5F5F5"
                             FontAttributes="Bold"
                             FontSize="14"
@@ -231,115 +238,119 @@
                             VerticalOptions="Center" />
 
                         <!--  Expand Button  -->
-                        <Button
+                        <controls:Button
                             x:Name="ExpandPreviewBtn"
-                            Grid.Column="1"
                             Margin="0"
                             Padding="0"
+                            controls:Grid.Column="1"
                             BackgroundColor="Transparent"
                             Clicked="ExpandPreviewBtn_Clicked"
                             CornerRadius="20"
                             HeightRequest="40"
                             WidthRequest="40">
-                            <Button.ImageSource>
-                                <FontImageSource
+                            <controls:Button.ImageSource>
+                                <controls:FontImageSource
                                     FontFamily="Icon"
                                     Glyph="&#xe5d0;"
                                     Color="#6750A4" />
-                            </Button.ImageSource>
-                        </Button>
-                    </Grid>
+                            </controls:Button.ImageSource>
+                        </controls:Button>
+                    </controls:Grid>
 
                     <!--  Image Content  -->
-                    <Grid Grid.Row="1">
-                        <Image
+                    <controls:Grid controls:Grid.Row="1">
+                        <controls:Image
                             x:Name="CapturedImage"
                             Margin="8"
                             Aspect="AspectFit" />
 
                         <!--  Placeholder when no image  -->
-                        <VerticalStackLayout
+                        <controls:VerticalStackLayout
                             x:Name="NoImagePlaceholder"
                             HorizontalOptions="Center"
                             IsVisible="True"
                             VerticalOptions="Center">
-                            <Label
+                            <controls:Label
                                 FontFamily="Icon"
                                 FontSize="48"
                                 HorizontalOptions="Center"
                                 Text="&#xe410;"
                                 TextColor="#BDBDBD" />
-                            <Label
+                            <controls:Label
                                 Margin="0,8,0,0"
                                 HorizontalOptions="Center"
                                 Text="No image selected"
                                 TextColor="#757575" />
-                        </VerticalStackLayout>
-                    </Grid>
-                </Grid>
+                        </controls:VerticalStackLayout>
+                    </controls:Grid>
+                </controls:Grid>
 
                 <!--  Tap Recognizer for Expanding  -->
-                <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="PreviewPanel_Tapped" />
-                </Frame.GestureRecognizers>
-            </Frame>
-        </Grid>
+                <Border.GestureRecognizers>
+                    <controls:TapGestureRecognizer Tapped="PreviewPanel_Tapped" />
+                </Border.GestureRecognizers>
+            </Border>
+        </controls:Grid>
 
         <!--  Footer Controls  -->
-        <Grid
-            Grid.Row="2"
+        <controls:Grid
+            controls:Grid.Row="2"
             ColumnDefinitions="*,*"
             ColumnSpacing="16">
-            <Button
+            <controls:Button
                 x:Name="EnhanceImageBtn"
-                Grid.Column="0"
+                controls:Grid.Column="0"
                 Clicked="EnhanceImageBtn_Clicked"
-                IsEnabled="{Binding Source={x:Reference CapturedImage}, Path=Source, Converter={toolkit:IsNotNullConverter}}"
+                IsEnabled="{controls:Binding Source={xaml:Reference CapturedImage},
+                                             Path=Source,
+                                             Converter={converters:IsNotNullConverter}}"
                 Text="Use OpenCV">
-                <Button.ImageSource>
-                    <FontImageSource
+                <controls:Button.ImageSource>
+                    <controls:FontImageSource
                         FontFamily="Icon"
                         Glyph="&#xe3a2;"
                         Color="White" />
-                </Button.ImageSource>
-            </Button>
-            <Button
+                </controls:Button.ImageSource>
+            </controls:Button>
+            <controls:Button
                 x:Name="ClearBtn"
-                Grid.Column="1"
+                controls:Grid.Column="1"
                 Clicked="ClearBtn_Clicked"
-                IsEnabled="{Binding Source={x:Reference CapturedImage}, Path=Source, Converter={toolkit:IsNotNullConverter}}"
+                IsEnabled="{controls:Binding Source={xaml:Reference CapturedImage},
+                                             Path=Source,
+                                             Converter={converters:IsNotNullConverter}}"
                 Text="Clear All">
-                <Button.ImageSource>
-                    <FontImageSource
+                <controls:Button.ImageSource>
+                    <controls:FontImageSource
                         FontFamily="Icon"
                         Glyph="&#xe14c;"
                         Color="White" />
-                </Button.ImageSource>
-            </Button>
-        </Grid>
-        <Grid
+                </controls:Button.ImageSource>
+            </controls:Button>
+        </controls:Grid>
+        <controls:Grid
             x:Name="LoadingOverlay"
-            Grid.Row="0"
-            Grid.RowSpan="3"
+            controls:Grid.Row="0"
+            controls:Grid.RowSpan="3"
             BackgroundColor="#80000000"
             InputTransparent="False"
             IsVisible="false">
-            <VerticalStackLayout
+            <controls:VerticalStackLayout
                 HorizontalOptions="Center"
                 Spacing="12"
                 VerticalOptions="Center">
-                <ActivityIndicator
+                <controls:ActivityIndicator
                     HeightRequest="50"
                     IsRunning="True"
                     WidthRequest="50"
                     Color="#6750A4" />
-                <Label
+                <controls:Label
                     x:Name="ProcessingLabel"
                     FontAttributes="Bold"
                     HorizontalOptions="Center"
                     Text="Processing..."
                     TextColor="White" />
-            </VerticalStackLayout>
-        </Grid>
-    </Grid>
-</ContentPage>
+            </controls:VerticalStackLayout>
+        </controls:Grid>
+    </controls:Grid>
+</controls:ContentPage>

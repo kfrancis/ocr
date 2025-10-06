@@ -1,6 +1,7 @@
+using Plugin.Maui.OCR.Sample;
 using UIKit;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace Plugin.Maui.OCR.Sample;
 
 public class Program
 {

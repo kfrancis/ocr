@@ -1,8 +1,7 @@
 using CommunityToolkit.Maui;
-using Plugin.Maui.OCR;
 using Plugin.Toolkit.Fonts.MaterialIcons;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace Plugin.Maui.OCR.Sample;
 
 public static class MauiProgram
 {
