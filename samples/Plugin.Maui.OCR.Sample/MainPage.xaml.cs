@@ -16,7 +16,7 @@ public partial class MainPage
     private readonly IOcrService _ocr;
     private bool _isPreviewExpanded;
     private bool _isResultsExpanded;
-    private byte[] _originalImageData;
+    private byte[]? _originalImageData;
     private GridLength _originalLeftColumnWidth;
     private GridLength _originalRightColumnWidth;
     private byte[] _preprocessedImageData;
@@ -393,7 +393,7 @@ public partial class MainPage
         }
     }
 
-    private void OnRecognitionCompleted(object sender, OcrCompletedEventArgs e)
+    private void OnRecognitionCompleted(object? sender, OcrCompletedEventArgs e)
     {
         // Remove the event handler to avoid multiple subscriptions
         _ocr.RecognitionCompleted -= OnRecognitionCompleted;

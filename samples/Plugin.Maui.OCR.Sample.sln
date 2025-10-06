@@ -1,29 +1,11 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.31611.283
+VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugin.Maui.OCR", "..\src\Plugin.Maui.OCR\Plugin.Maui.OCR.csproj", "{C7180817-E12D-4C5C-8045-95397EA0939E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{35827FD5-AD36-4B01-8E49-2F6821444934}"
-	ProjectSection(SolutionItems) = preProject
-		..\.editorconfig = ..\.editorconfig
-		..\.gitattributes = ..\.gitattributes
-		..\.gitignore = ..\.gitignore
-		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
-		..\Directory.build.props = ..\Directory.build.props
-		..\Directory.build.targets = ..\Directory.build.targets
-		global.json = global.json
-		..\LICENSE = ..\LICENSE
-		..\nuget.png = ..\nuget.png
-		..\README.md = ..\README.md
-		..\.github\workflows\release-nuget.yml = ..\.github\workflows\release-nuget.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{87FCE34D-756C-428E-BE42-D483EBE97276}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{48EBF5E4-F9D1-422D-B984-8F9C9CC5EAFC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Maui.OCR.Sample", "Plugin.Maui.OCR.Sample\Plugin.Maui.OCR.Sample.csproj", "{A6DD1325-F326-92EC-98C3-853AA0E70B00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Maui.OCR", "..\src\Plugin.Maui.OCR\Plugin.Maui.OCR.csproj", "{3A543DB9-D1BC-24C9-3AB7-36629A9179CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,25 +13,21 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C7180817-E12D-4C5C-8045-95397EA0939E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7180817-E12D-4C5C-8045-95397EA0939E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7180817-E12D-4C5C-8045-95397EA0939E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7180817-E12D-4C5C-8045-95397EA0939E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A6DD1325-F326-92EC-98C3-853AA0E70B00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A6DD1325-F326-92EC-98C3-853AA0E70B00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6DD1325-F326-92EC-98C3-853AA0E70B00}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{A6DD1325-F326-92EC-98C3-853AA0E70B00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6DD1325-F326-92EC-98C3-853AA0E70B00}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A6DD1325-F326-92EC-98C3-853AA0E70B00}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{3A543DB9-D1BC-24C9-3AB7-36629A9179CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A543DB9-D1BC-24C9-3AB7-36629A9179CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A543DB9-D1BC-24C9-3AB7-36629A9179CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A543DB9-D1BC-24C9-3AB7-36629A9179CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{C7180817-E12D-4C5C-8045-95397EA0939E} = {87FCE34D-756C-428E-BE42-D483EBE97276}
-		{A6DD1325-F326-92EC-98C3-853AA0E70B00} = {48EBF5E4-F9D1-422D-B984-8F9C9CC5EAFC}
-	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
+		SolutionGuid = {A951BCE6-40E7-480B-8823-BCCA8A9ADF4F}
 	EndGlobalSection
 EndGlobal
