@@ -109,7 +109,7 @@ class OcrImplementation : IOcrService
             }
         }
 
-        foreach (var match in options.PatternConfigs.Select(config => OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config)).Where(match => !string.IsNullOrEmpty(match)))
+        foreach (var match in options.PatternConfigs.Select(config => OcrPatternMatcher.ExtractPatterns(ocrResult.AllText, config)).SelectMany<IEnumerable<string>, string>(matches => matches.Where(match => !string.IsNullOrEmpty(match))))
         {
             ocrResult.MatchedValues.Add(match);
         }
