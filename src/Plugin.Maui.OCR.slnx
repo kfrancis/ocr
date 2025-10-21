@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../tests/Plugin.Maui.OCR.Tests/Plugin.Maui.OCR.Tests.csproj" />
   <Project Path="Plugin.Maui.OCR/Plugin.Maui.OCR.csproj" />
 </Solution>

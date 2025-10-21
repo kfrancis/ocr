@@ -14,15 +14,15 @@ namespace Plugin.Maui.OCR;
 
 internal class OcrImplementation : IOcrService, IDisposable
 {
-    // Create a singleton ExecutorService
-    private static IExecutorService? s_executorService = Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
-    private static ITextRecognizer? s_textRecognizer = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
+    private static readonly IExecutorService? s_executorService = Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
+    private static readonly ITextRecognizer? s_textRecognizer = TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
 
-    public event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+    public event EventHandler<OcrCompletedEventArgs>? RecognitionCompleted;
 
     // Define the supported languages
     private static readonly IReadOnlyCollection<string> s_cloudSupportedLanguages = new List<string>
     {
+        // ReSharper disable once StringLiteralTypo
         "ar", "zh-Hans", "zh-Hant", "da", "nl", "en", "fi", "fr", "de", "el", "hi", "hu", "it", "ja", "ko",
         "no", "pl", "pt", "ru", "es", "sv", "th", "tr", "vi"
     };
@@ -37,7 +37,8 @@ internal class OcrImplementation : IOcrService, IDisposable
     public IReadOnlyCollection<string> SupportedLanguages => s_onDeviceSupportedLanguages;
 
     // Adjust the property dynamically based on options
-    public static IReadOnlyCollection<string> GetSupportedLanguages(bool tryHard) => tryHard ? s_cloudSupportedLanguages : s_onDeviceSupportedLanguages;
+    public static IReadOnlyCollection<string> GetSupportedLanguages(bool tryHard) =>
+        tryHard ? s_cloudSupportedLanguages : s_onDeviceSupportedLanguages;
 
     public static OcrResult ProcessOcrResult(Java.Lang.Object result, OcrOptions options)
     {
@@ -52,6 +53,9 @@ internal class OcrImplementation : IOcrService, IDisposable
                 ocrResult.Lines.Add(line.Text);
                 foreach (var element in line.Elements)
                 {
+                    if (element.BoundingBox == null)
+                        continue;
+
                     var ocrElement = new OcrElement
                     {
                         Text = element.Text,
@@ -118,26 +122,18 @@ internal class OcrImplementation : IOcrService, IDisposable
 
             try
             {
-                if (options.TryHard)
-                {
-                    s_executorService ??= Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
-
-                    // For more accurate results, use the cloud-based recognizer (requires internet).
-                    textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
+                textScanner = options.TryHard
+                    ? TextRecognition.GetClient(new TextRecognizerOptions.Builder()
                         .SetExecutor(s_executorService)
-                        .Build());
-                }
-                else
-                {
-                    // Use the default on-device recognizer for faster results.
-                    s_textRecognizer ??= TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
-
-                    textScanner = s_textRecognizer;
-                }
+                        .Build())
+                    : s_textRecognizer;
 
                 // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case
-                var result = await textScanner.Process(srcImage).AsAsync<Text>();
-                return ProcessOcrResult(result, options);
+                if (textScanner != null)
+                {
+                    var result = await textScanner.Process(srcImage).AsAsync<Text>();
+                    return ProcessOcrResult(result, options);
+                }
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
             {
@@ -148,10 +144,9 @@ internal class OcrImplementation : IOcrService, IDisposable
             }
             finally
             {
-                if (textScanner != s_textRecognizer)
-                {
-                    textScanner?.Dispose();
-                }
+                // Dispose only if we created a temporary cloud recognizer (TryHard case)
+                if (textScanner != null && textScanner != s_textRecognizer && options.TryHard)
+                    textScanner.Dispose();
             }
         }
 
@@ -178,26 +173,18 @@ internal class OcrImplementation : IOcrService, IDisposable
 
             try
             {
-                if (options.TryHard)
-                {
-                    s_executorService ??= Executors.NewFixedThreadPool(Runtime.GetRuntime()?.AvailableProcessors() ?? 1);
-
-                    // For more accurate results, use the cloud-based recognizer (requires internet).
-                    textScanner = TextRecognition.GetClient(new TextRecognizerOptions.Builder()
+                textScanner = options.TryHard
+                    ? TextRecognition.GetClient(new TextRecognizerOptions.Builder()
                         .SetExecutor(s_executorService)
-                        .Build());
-                }
-                else
+                        .Build())
+                    : s_textRecognizer;
+
+                if (textScanner != null)
                 {
-                    s_textRecognizer ??= TextRecognition.GetClient(TextRecognizerOptions.DefaultOptions);
-
-                    // Use the default on-device recognizer for faster results.
-                    textScanner = s_textRecognizer;
+                    var result = ProcessOcrResult(await textScanner.Process(srcImage).AsAsync<Text>(), options);
+                    RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(result));
                 }
 
-                // Try to perform the OCR operation. We should be installing the model necessary when this app is installed, but just in case
-                var result = ProcessOcrResult(await textScanner.Process(srcImage).AsAsync<Text>(), options);
-                RecognitionCompleted(this, new OcrCompletedEventArgs(result));
                 break;
             }
             catch (MlKitException ex) when ((ex.Message ?? string.Empty).Contains("Waiting for the text optional module to be downloaded"))
@@ -209,33 +196,19 @@ internal class OcrImplementation : IOcrService, IDisposable
             }
             finally
             {
-                if (textScanner != s_textRecognizer)
-                {
-                    textScanner?.Dispose();
-                }
+                if (textScanner != null && textScanner != s_textRecognizer && options.TryHard)
+                    textScanner.Dispose();
             }
         }
 
         // If all retries have failed, throw the last exception
         if (lastException != null)
-        {
-            RecognitionCompleted(this, new OcrCompletedEventArgs(null, lastException.Message));
-        }
-    }
-    private static void ReleaseUnmanagedResources()
-    {
-        s_executorService?.Shutdown();
-        s_textRecognizer?.Dispose();
+            RecognitionCompleted?.Invoke(this, new OcrCompletedEventArgs(null, lastException.Message));
     }
 
     public void Dispose()
     {
-        ReleaseUnmanagedResources();
+        // No disposal of static singletons here (avoids S2696 pattern and cross-instance issues)
         GC.SuppressFinalize(this);
-    }
-
-    ~OcrImplementation()
-    {
-        ReleaseUnmanagedResources();
     }
 }

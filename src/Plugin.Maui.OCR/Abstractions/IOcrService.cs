@@ -3,39 +3,39 @@ using System.Text.RegularExpressions;
 namespace Plugin.Maui.OCR;
 
 /// <summary>
-/// A callback that can be used to provide custom validation for the extracted text.
+///     A callback that can be used to provide custom validation for the extracted text.
 /// </summary>
 /// <param name="extractedText">
-/// The extracted text to validate.
+///     The extracted text to validate.
 /// </param>
 /// <returns>
-/// True if the text is valid, otherwise false.
+///     True if the text is valid, otherwise false.
 /// </returns>
 public delegate bool CustomOcrValidationCallback(string extractedText);
 
 /// <summary>
-/// OCR API.
+///     OCR API.
 /// </summary>
 public interface IOcrService
 {
     /// <summary>
-    /// Event triggered when OCR recognition is completed.
-    /// </summary>
-    event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
-
-    /// <summary>
-    /// BCP-47 language codes supported by the OCR service.
+    ///     BCP-47 language codes supported by the OCR service.
     /// </summary>
     IReadOnlyCollection<string> SupportedLanguages { get; }
 
     /// <summary>
-    /// Initialize the OCR on the platform
+    ///     Event triggered when OCR recognition is completed.
+    /// </summary>
+    event EventHandler<OcrCompletedEventArgs> RecognitionCompleted;
+
+    /// <summary>
+    ///     Initialize the OCR on the platform
     /// </summary>
     /// <param name="ct">An optional cancellation token</param>
     Task InitAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// Takes an image and returns the text found in the image.
+    ///     Takes an image and returns the text found in the image.
     /// </summary>
     /// <param name="imageData">The image data</param>
     /// <param name="tryHard">True to try and tell the API to be more accurate, otherwise just be fast.</param>
@@ -46,7 +46,7 @@ public interface IOcrService
     Task<OcrResult> RecognizeTextAsync(byte[] imageData, bool tryHard = false, CancellationToken ct = default);
 
     /// <summary>
-    /// Takes an image and returns the text found in the image.
+    ///     Takes an image and returns the text found in the image.
     /// </summary>
     /// <param name="imageData">The image data</param>
     /// <param name="options">The options for OCR</param>
@@ -57,7 +57,7 @@ public interface IOcrService
     Task<OcrResult> RecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default);
 
     /// <summary>
-    /// Takes an image, starts the OCR process and triggers the RecognitionCompleted event when completed.
+    ///     Takes an image, starts the OCR process and triggers the RecognitionCompleted event when completed.
     /// </summary>
     /// <param name="imageData">The image data</param>
     /// <param name="options">The options for OCR</param>
@@ -69,21 +69,21 @@ public interface IOcrService
 }
 
 /// <summary>
-/// A helper class to extract patterns from text and use the custom validation function (if defined).
+///     A helper class to extract patterns from text and use the custom validation function (if defined).
 /// </summary>
 public static class OcrPatternMatcher
 {
     /// <summary>
-    /// Extracts a pattern from the input text using the provided configuration.
+    ///     Extracts a pattern from the input text using the provided configuration.
     /// </summary>
     /// <param name="input">
-    /// The input text to extract the pattern from.
+    ///     The input text to extract the pattern from.
     /// </param>
     /// <param name="config">
-    /// The configuration to use for pattern extraction.
+    ///     The configuration to use for pattern extraction.
     /// </param>
     /// <returns>
-    /// The extracted pattern, or null if no pattern was found or the pattern failed validation.
+    ///     The extracted pattern, or null if no pattern was found or the pattern failed validation.
     /// </returns>
     public static string? ExtractPattern(string input, OcrPatternConfig? config)
     {
@@ -105,19 +105,20 @@ public static class OcrPatternMatcher
 }
 
 /// <summary>
-/// Provides data for the RecognitionCompleted event.
+///     Provides data for the RecognitionCompleted event.
 /// </summary>
 public class OcrCompletedEventArgs : EventArgs
 {
     /// <summary>
-    /// Constructor
+    ///     Constructor
     /// </summary>
     /// <param name="result">
-    /// The result of the OCR operation.
+    ///     The result of the OCR operation.
     /// </param>
     /// <param name="errorMessage">
-    /// Any error message if the OCR operation failed, or empty string otherwise.
-    /// </param> {
+    ///     Any error message if the OCR operation failed, or empty string otherwise.
+    /// </param>
+    /// {
     public OcrCompletedEventArgs(OcrResult? result, string? errorMessage = null)
     {
         Result = result;
@@ -125,27 +126,31 @@ public class OcrCompletedEventArgs : EventArgs
     }
 
     /// <summary>
-    /// Any error message if the OCR operation failed, or empty string otherwise.
+    ///     Any error message if the OCR operation failed, or empty string otherwise.
     /// </summary>
     public string ErrorMessage { get; }
 
     /// <summary>
-    /// Indicates whether the OCR operation was successful.
+    ///     Indicates whether the OCR operation was successful.
     /// </summary>
-    public bool IsSuccessful => Result?.Success ?? false;
+    public bool IsSuccessful
+    {
+        get => Result?.Success ?? false;
+    }
 
     /// <summary>
-    /// The result of the OCR operation.
+    ///     The result of the OCR operation.
     /// </summary>
     public OcrResult? Result { get; }
 }
 
 /// <summary>
-/// The options for OCR.
+///     The options for OCR.
 /// </summary>
 public sealed class OcrOptions
 {
-    private OcrOptions(string? language, bool tryHard, List<OcrPatternConfig> patternConfigs, CustomOcrValidationCallback? customCallback)
+    private OcrOptions(string? language, bool tryHard, List<OcrPatternConfig> patternConfigs,
+        CustomOcrValidationCallback? customCallback)
     {
         Language = language;
         TryHard = tryHard;
@@ -154,27 +159,27 @@ public sealed class OcrOptions
     }
 
     /// <summary>
-    /// A callback after recognition is complete
+    ///     A callback after recognition is complete
     /// </summary>
     public CustomOcrValidationCallback? CustomCallback { get; }
 
     /// <summary>
-    /// The bcp-47 language code to use for OCR.
+    ///     The bcp-47 language code to use for OCR.
     /// </summary>
     public string? Language { get; }
 
     /// <summary>
-    /// The pattern configurations to use for OCR.
+    ///     The pattern configurations to use for OCR.
     /// </summary>
     public List<OcrPatternConfig> PatternConfigs { get; }
 
     /// <summary>
-    /// Should the platform attempt to be more thorough vs quick?
+    ///     Should the platform attempt to be more thorough vs quick?
     /// </summary>
     public bool TryHard { get; }
 
     /// <summary>
-    /// Builder for OcrOptions.
+    ///     Builder for OcrOptions.
     /// </summary>
     public class Builder
     {
@@ -184,13 +189,13 @@ public sealed class OcrOptions
         private bool _tryHard;
 
         /// <summary>
-        /// Adds an ocr pattern config to the options
+        ///     Adds an ocr pattern config to the options
         /// </summary>
         /// <param name="patternConfig">
-        /// The pattern configuration to add.
+        ///     The pattern configuration to add.
         /// </param>
         /// <returns>
-        /// The builder.
+        ///     The builder.
         /// </returns>
         public Builder AddPatternConfig(OcrPatternConfig patternConfig)
         {
@@ -199,10 +204,10 @@ public sealed class OcrOptions
         }
 
         /// <summary>
-        /// Build the OCR options
+        ///     Build the OCR options
         /// </summary>
         /// <returns>
-        /// The OCR options.
+        ///     The OCR options.
         /// </returns>
         public OcrOptions Build()
         {
@@ -210,13 +215,13 @@ public sealed class OcrOptions
         }
 
         /// <summary>
-        /// Sets a custom callback
+        ///     Sets a custom callback
         /// </summary>
         /// <param name="customCallback">
-        /// A callback after recognition is complete
+        ///     A callback after recognition is complete
         /// </param>
         /// <returns>
-        /// The builder.
+        ///     The builder.
         /// </returns>
         public Builder SetCustomCallback(CustomOcrValidationCallback customCallback)
         {
@@ -225,13 +230,13 @@ public sealed class OcrOptions
         }
 
         /// <summary>
-        /// Sets the language
+        ///     Sets the language
         /// </summary>
         /// <param name="language">
-        /// The bcp-47 language code to use for OCR.
+        ///     The bcp-47 language code to use for OCR.
         /// </param>
         /// <returns>
-        /// The builder.
+        ///     The builder.
         /// </returns>
         public Builder SetLanguage(string language)
         {
@@ -240,13 +245,13 @@ public sealed class OcrOptions
         }
 
         /// <summary>
-        /// Sets the pattern configurations to use for OCR.
+        ///     Sets the pattern configurations to use for OCR.
         /// </summary>
         /// <param name="patternConfigs">
-        /// The pattern configurations to use for OCR.
+        ///     The pattern configurations to use for OCR.
         /// </param>
         /// <returns>
-        /// The builder.
+        ///     The builder.
         /// </returns>
         public Builder SetPatternConfigs(List<OcrPatternConfig>? patternConfigs)
         {
@@ -255,13 +260,13 @@ public sealed class OcrOptions
         }
 
         /// <summary>
-        /// Sets the accuracy level
+        ///     Sets the accuracy level
         /// </summary>
         /// <param name="tryHard">
-        /// Should the platform attempt to be more thorough vs quick?
+        ///     Should the platform attempt to be more thorough vs quick?
         /// </param>
         /// <returns>
-        /// The builder.
+        ///     The builder.
         /// </returns>
         public Builder SetTryHard(bool tryHard)
         {
@@ -272,18 +277,18 @@ public sealed class OcrOptions
 }
 
 /// <summary>
-/// Configuration for OCR patterns.
+///     Configuration for OCR patterns.
 /// </summary>
 public class OcrPatternConfig
 {
     /// <summary>
-    /// Constructor
+    ///     Constructor
     /// </summary>
     /// <param name="regexPattern">
-    /// The regex pattern to match.
+    ///     The regex pattern to match.
     /// </param>
     /// <param name="validationFunction">
-    /// If provided, the extracted text will be validated against this function.
+    ///     If provided, the extracted text will be validated against this function.
     /// </param>
     public OcrPatternConfig(string regexPattern, Func<string, bool> validationFunction = null)
     {
@@ -292,78 +297,78 @@ public class OcrPatternConfig
     }
 
     /// <summary>
-    /// The regex pattern to match.
+    ///     The regex pattern to match.
     /// </summary>
     public string RegexPattern { get; set; }
 
     /// <summary>
-    /// If provided, the extracted text will be validated against this function.
+    ///     If provided, the extracted text will be validated against this function.
     /// </summary>
     public Func<string, bool> ValidationFunction { get; set; }
 }
 
 /// <summary>
-/// The result of an OCR operation.
+///     The result of an OCR operation.
 /// </summary>
 public class OcrResult
 {
     /// <summary>
-    /// The full text of the OCR result.
+    ///     The full text of the OCR result.
     /// </summary>
     public string AllText { get; set; }
 
     /// <summary>
-    /// The individual elements of the OCR result.
+    ///     The individual elements of the OCR result.
     /// </summary>
     public IList<OcrElement> Elements { get; set; } = new List<OcrElement>();
 
     /// <summary>
-    /// The lines of the OCR result.
+    ///     The lines of the OCR result.
     /// </summary>
     public IList<string> Lines { get; set; } = new List<string>();
 
     /// <summary>
-    /// The matched values of the OCR result.
+    ///     The matched values of the OCR result.
     /// </summary>
     public IList<string> MatchedValues { get; set; } = new List<string>();
 
     /// <summary>
-    /// Was the OCR successful?
+    ///     Was the OCR successful?
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// The words of the OCR result.
+    ///     The words of the OCR result.
     /// </summary>
     public class OcrElement
     {
         /// <summary>
-        /// The confidence of the OCR result.
+        ///     The confidence of the OCR result.
         /// </summary>
         public float Confidence { get; set; }
 
         /// <summary>
-        /// The height of the element.
+        ///     The height of the element.
         /// </summary>
         public int Height { get; set; }
 
         /// <summary>
-        /// The text of the element.
+        ///     The text of the element.
         /// </summary>
         public string Text { get; set; }
 
         /// <summary>
-        /// The width of the element.
+        ///     The width of the element.
         /// </summary>
         public int Width { get; set; }
 
         /// <summary>
-        /// The X coordinates of the element.
+        ///     The X coordinates of the element.
         /// </summary>
         public int X { get; set; }
 
         /// <summary>
-        /// The Y coordinates of the element.
+        ///     The Y coordinates of the element.
         /// </summary>
         public int Y { get; set; }
     }
