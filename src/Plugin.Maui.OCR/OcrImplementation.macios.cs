@@ -1,6 +1,7 @@
 using CoreGraphics;
 using Foundation;
 using ImageIO;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using Vision;
 
@@ -8,7 +9,7 @@ namespace Plugin.Maui.OCR;
 
 class OcrImplementation : IOcrService
 {
-    private static readonly object s_initLock = new();
+    private static readonly Lock s_initLock = new();
     private bool _isInitialized;
     private IReadOnlyCollection<string> _supportedLanguages;
 
@@ -236,7 +237,7 @@ class OcrImplementation : IOcrService
 
                 if (options.Language is { } langString && supportedLangList.Contains(langString))
                 {
-                    recognizeTextRequest.RecognitionLanguages = new[] { langString };
+                    recognizeTextRequest.RecognitionLanguages = [langString];
                 }
                 else
                 {
@@ -251,7 +252,7 @@ class OcrImplementation : IOcrService
 
             ocrHandler = imageOrientation != null ? new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary()) : new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
 
-            ocrHandler.Perform(new VNRequest[] { recognizeTextRequest }, out var error);
+            ocrHandler.Perform([recognizeTextRequest], out var error);
 
             if (error != null)
             {
@@ -277,17 +278,16 @@ class OcrImplementation : IOcrService
             // New instance method available from iOS 15.0, macOS 12.0
             return recognizeTextRequest.GetSupportedRecognitionLanguages(out langError).Select(ns => (string)ns);
         }
-        else if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+
+        if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
         {
             // Static method available until iOS 14.9, macOS 11.9
-            return VNRecognizeTextRequest.GetSupportedRecognitionLanguages(textRecognitionLevel, VNRecognizeTextRequestRevision.Unspecified, out langError) ?? Array.Empty<string>();
+            return VNRecognizeTextRequest.GetSupportedRecognitionLanguages(textRecognitionLevel, VNRecognizeTextRequestRevision.Unspecified, out langError) ?? [];
         }
-        else
-        {
-            // Default case when no suitable API is available
-            langError = null;
-            return Array.Empty<string>();
-        }
+
+        // Default case when no suitable API is available
+        langError = null;
+        return [];
     }
 
     public Task StartRecognizeTextAsync(byte[] imageData, OcrOptions options, CancellationToken ct = default)
@@ -357,7 +357,7 @@ class OcrImplementation : IOcrService
 
                 if (supportedLangList.Contains(options.Language))
                 {
-                    recognizeTextRequest.RecognitionLanguages = new[] { options.Language };
+                    recognizeTextRequest.RecognitionLanguages = [options.Language];
                 }
                 else
                 {
@@ -375,7 +375,7 @@ class OcrImplementation : IOcrService
                 ? new VNImageRequestHandler(srcImage.CGImage, orientation: imageOrientation.Value, new NSDictionary())
                 : new VNImageRequestHandler(srcImage.CGImage, new NSDictionary());
 
-            if (!ocrHandler.Perform([recognizeTextRequest], out var handlerError) && handlerError != null && !string.IsNullOrEmpty(handlerError.LocalizedDescription))
+            if (!ocrHandler.Perform([recognizeTextRequest], out var handlerError) && !string.IsNullOrEmpty(handlerError.LocalizedDescription))
             {
                 RecognitionCompleted(this, new OcrCompletedEventArgs(null, handlerError.LocalizedDescription));
             }

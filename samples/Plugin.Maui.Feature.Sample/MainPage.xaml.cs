@@ -472,7 +472,7 @@ public partial class MainPage
             ThresholdType.BinaryInv, 15, 10);
 
         // 4. Morphological Open + Close to remove noise and fill gaps
-        using var morphKernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1));
+            using var morphKernel = CvInvoke.GetStructuringElement(MorphShapes.Rectangle, new System.Drawing.Size(2, 2), new System.Drawing.Point(-1, -1));
         CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Open, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
         CvInvoke.MorphologyEx(thresholded, thresholded, MorphOp.Close, morphKernel, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar());
 
