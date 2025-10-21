@@ -47,11 +47,11 @@
 	<ItemGroup>
 		<Compile Include="*.cs" />
 		<None Include="..\..\README.md" Pack="true" PackagePath="." />
-		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.4">
+		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.39">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="MinVer" Version="5.0.0">
+		<PackageReference Include="MinVer" Version="6.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -106,7 +106,7 @@
 		<Compile Include="Platforms\NotImplemented\**\*.cs" />
 	</ItemGroup>
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<PackageReference Include="Roslynator.Analyzers" Version="4.12.4">
+		<PackageReference Include="Roslynator.Analyzers" Version="4.14.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

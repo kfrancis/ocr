@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/lib/">
+    <Project Path="../src/Plugin.Maui.OCR/Plugin.Maui.OCR.csproj" />
+  </Folder>
+  <Folder Name="/sample/">
+    <Project Path="Plugin.Maui.Feature.Sample/Plugin.Maui.OCR.Sample.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.gitattributes" />
+    <File Path="../.github/workflows/ci.yml" />
+    <File Path="../.github/workflows/release-nuget.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../Directory.build.props" />
+    <File Path="../Directory.build.targets" />
+    <File Path="../LICENSE" />
+    <File Path="../nuget.png" />
+    <File Path="../README.md" />
+    <File Path="global.json" />
+  </Folder>
+</Solution>
