@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Hosting;
+
 namespace Plugin.Maui.OCR;
 
 public static class OcrServiceExtensions

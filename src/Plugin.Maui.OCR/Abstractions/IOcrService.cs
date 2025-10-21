@@ -180,7 +180,7 @@ public sealed class OcrOptions
     {
         private CustomOcrValidationCallback? _customCallback;
         private string? _language;
-        private List<OcrPatternConfig> _patternConfigs = new();
+        private List<OcrPatternConfig> _patternConfigs = [];
         private bool _tryHard;
 
         /// <summary>
