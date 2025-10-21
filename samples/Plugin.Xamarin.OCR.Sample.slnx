@@ -1,0 +1,50 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM" />
+    <Platform Name="iPhone" />
+    <Platform Name="iPhoneSimulator" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/lib/">
+    <Project Path="../src/Plugin.Xamarin.OCR/Plugin.Xamarin.OCR.csproj" />
+  </Folder>
+  <Folder Name="/sample/">
+    <Project Path="Plugin.Xamarin.OCR.Sample/Plugin.Xamarin.OCR.Sample.Android/Plugin.Xamarin.OCR.Sample.Android.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="Plugin.Xamarin.OCR.Sample/Plugin.Xamarin.OCR.Sample.iOS/Plugin.Xamarin.OCR.Sample.iOS.csproj">
+      <Platform Solution="*|Any CPU" Project="iPhoneSimulator" />
+      <Platform Solution="*|ARM" Project="iPhoneSimulator" />
+      <Platform Solution="*|iPhone" Project="iPhone" />
+      <Platform Solution="*|iPhoneSimulator" Project="iPhoneSimulator" />
+      <Platform Solution="*|x64" Project="iPhoneSimulator" />
+      <Platform Solution="*|x86" Project="iPhoneSimulator" />
+      <Deploy Solution="Debug|iPhone" />
+    </Project>
+    <Project Path="Plugin.Xamarin.OCR.Sample/Plugin.Xamarin.OCR.Sample.UWP/Plugin.Xamarin.OCR.Sample.UWP.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|ARM" Project="ARM" />
+      <Platform Solution="*|iPhone" Project="x64" />
+      <Platform Solution="*|iPhoneSimulator" Project="x64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Deploy />
+    </Project>
+    <Project Path="Plugin.Xamarin.OCR.Sample/Plugin.Xamarin.OCR.Sample/Plugin.Xamarin.OCR.Sample.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.gitattributes" />
+    <File Path="../.github/workflows/ci.yml" />
+    <File Path="../.github/workflows/release-nuget.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../Directory.build.props" />
+    <File Path="../Directory.build.targets" />
+    <File Path="../LICENSE" />
+    <File Path="../nuget.png" />
+    <File Path="../README.md" />
+    <File Path="global.json" />
+  </Folder>
+</Solution>

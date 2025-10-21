@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.gitattributes" />
+    <File Path="../.github/FUNDING.yml" />
+    <File Path="../.github/workflows/ci.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../Directory.build.props" />
+    <File Path="../Directory.build.targets" />
+    <File Path="../global.json" />
+    <File Path="../LICENSE" />
+    <File Path="../nuget.png" />
+    <File Path="../README.md" />
+  </Folder>
+  <Folder Name="/tutorial/">
+    <File Path="../tutorial/01_iocrservice_interface_.md" />
+    <File Path="../tutorial/02_ocrresult_.md" />
+    <File Path="../tutorial/03_ocroptions_.md" />
+    <File Path="../tutorial/04_ocrpatternmatcher_.md" />
+    <File Path="../tutorial/05_ocrimplementation_.md" />
+    <File Path="../tutorial/06_ocrplugin_.md" />
+    <File Path="../tutorial/07_useocr_extension_method_.md" />
+    <File Path="../tutorial/08_mainpage__sample_app__.md" />
+    <File Path="../tutorial/index.md" />
+  </Folder>
+  <Project Path="../test/Plugin.OCR.Tests/Plugin.OCR.Maui.Tests.csproj" />
+  <Project Path="Plugin.Maui.OCR/Plugin.Maui.OCR.csproj" />
+  <Project Path="Plugin.Xamarin.OCR/Plugin.Xamarin.OCR.csproj" />
+</Solution>

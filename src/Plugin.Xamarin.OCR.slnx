@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../Directory.build.props" />
+    <File Path="../Directory.build.targets" />
+    <File Path="../global.json" />
+  </Folder>
+  <Project Path="Plugin.Xamarin.OCR/Plugin.Xamarin.OCR.csproj" />
+</Solution>
