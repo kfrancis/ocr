@@ -91,38 +91,38 @@ jobs:
           ${{ env.NuGetDirectory }}/artifacts/*.nupkg
           ${{ env.NuGetDirectory }}/artifacts/*.snupkg
 
-  validate_nuget:
-    runs-on: windows-latest
-    needs: [ create_nuget ]
-    steps:
-      # Install the .NET SDK indicated in the global.json file
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-
-      # Download the NuGet package created in the previous job
-      - uses: actions/download-artifact@v4
-        with:
-          name: nuget
-          path: ${{ env.NuGetDirectory }}
-
-      - name: Install nuget validator
-        run: dotnet tool update Meziantou.Framework.NuGetPackageValidation.Tool --global
-
-      # Validate metadata and content of the NuGet package
-      # https://www.nuget.org/packages/Meziantou.Framework.NuGetPackageValidation.Tool#readme-body-tab
-      # If some rules are not applicable, you can disable them
-      # using the --excluded-rules or --excluded-rule-ids option
-      - name: Validate package
-        run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
-
-  # run_test:
+  # validate_nuget:
   #   runs-on: windows-latest
+  #   needs: [ create_nuget ]
   #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #   - name: Run tests
-  #     run: dotnet test --configuration ${{ env.BUILD_CONFIGURATION }} --filter 'FullyQualifiedName!~TestBase'
+  #     # Install the .NET SDK indicated in the global.json file
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v4
+
+  #     # Download the NuGet package created in the previous job
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: nuget
+  #         path: ${{ env.NuGetDirectory }}
+
+  #     - name: Install nuget validator
+  #       run: dotnet tool update Meziantou.Framework.NuGetPackageValidation.Tool --global
+
+  #     # Validate metadata and content of the NuGet package
+  #     # https://www.nuget.org/packages/Meziantou.Framework.NuGetPackageValidation.Tool#readme-body-tab
+  #     # If some rules are not applicable, you can disable them
+  #     # using the --excluded-rules or --excluded-rule-ids option
+  #     - name: Validate package
+  #       run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
+
+  run_test:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Run tests
+      run: dotnet test --configuration ${{ env.BUILD_CONFIGURATION }} --filter 'FullyQualifiedName!~TestBase'
 
   deploy:
     # Publish only when creating a GitHub Release
@@ -130,7 +130,7 @@ jobs:
     # You can update this logic if you want to manage releases differently
     if: github.event_name == 'release'
     runs-on: windows-latest
-    needs: [ validate_nuget ]
+    needs: [ run_test ]
     steps:
       # Download the NuGet package created in the previous job
       - uses: actions/download-artifact@v4
