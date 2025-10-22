@@ -16,7 +16,9 @@ on:
       - published    # Run the workflow when a new GitHub release is published
 
 env:
+  DOTNET_MULTILEVEL_LOOKUP: 0
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
   DOTNET_NOLOGO: true
   BUILD_CONFIGURATION: Release
   NuGetDirectory: ${{ github.workspace}}/nuget
@@ -25,9 +27,15 @@ defaults:
   run:
     shell: pwsh
 
+permissions: {}
+
 jobs:
   create_nuget:
     runs-on: windows-latest
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
     strategy:
       matrix:
         project:
@@ -35,9 +43,10 @@ jobs:
           - src/Plugin.Maui.OCR/Plugin.Maui.OCR.csproj
   
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0 # Get all history to allow versioning using MinVer
+        show-progress: false
 
     - name: Set up JDK
       uses: actions/setup-java@v2
@@ -52,7 +61,9 @@ jobs:
 
     # Install the .NET SDK indicated in the global.json file
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
+      with:
+          global-json-file: 'global.json'
 
     - name: Install MAUI workloads (only for MAUI project)
       if: contains(matrix.project, 'Plugin.Maui.OCR')
@@ -66,6 +77,7 @@ jobs:
         git tag
         $version = minver --auto-increment minor --build-metadata build --verbosity trace
         echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
+        echo "version=$version" >> $env:GITHUB_OUTPUT
 
     # - name: Restore NuGet packages for Xamarin
     #   if: contains(matrix.project, 'Plugin.Xamarin.OCR')
@@ -140,16 +152,25 @@ jobs:
     if: github.event_name == 'release'
     runs-on: windows-latest
     needs: [ create_nuget ]
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
     steps:
       # Download the NuGet package created in the previous job
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: nuget
           path: ${{ env.NuGetDirectory }}
 
       # Install the .NET SDK indicated in the global.json file
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
+
+      # Get a short-lived NuGet API key
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
 
       # Publish all NuGet packages to NuGet.org
       # Use --skip-duplicate to prevent errors if a package with the same version already exists.
@@ -157,5 +178,5 @@ jobs:
       - name: Publish NuGet package
         run: |
           foreach($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
-              dotnet nuget push $file --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+              dotnet nuget push $file --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
           }
