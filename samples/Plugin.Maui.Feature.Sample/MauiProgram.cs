@@ -1,8 +1,11 @@
 using CommunityToolkit.Maui;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 using Plugin.Maui.OCR;
 using Plugin.Toolkit.Fonts.MaterialIcons;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace OcrSample;
 
 public static class MauiProgram
 {

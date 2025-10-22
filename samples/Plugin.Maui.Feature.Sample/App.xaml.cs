@@ -1,4 +1,6 @@
-namespace Plugin.Maui.Feature.Sample;
+using Microsoft.Maui.Controls;
+
+namespace OcrSample;
 
 public partial class App : Application
 {

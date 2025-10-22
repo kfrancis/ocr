@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace OcrSample;
 
 class Program : MauiApplication
 {

@@ -1,14 +1,13 @@
+using ObjCRuntime;
 using UIKit;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace OcrSample;
 
 public class Program
 {
-    // This is the main entry point of the application.
+    // iOS entry point required to satisfy CS5001 on net9.0-ios single project.
     static void Main(string[] args)
     {
-        // if you want to use a different Application Delegate class from "AppDelegate"
-        // you can specify it here.
         UIApplication.Main(args, null, typeof(AppDelegate));
     }
 }

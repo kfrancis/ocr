@@ -5,6 +5,7 @@
     </application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
+    <!-- Permissions moved to AssemblyInfo.android.cs via attributes -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />

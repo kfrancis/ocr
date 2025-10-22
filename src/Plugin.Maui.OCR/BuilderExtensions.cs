@@ -1,3 +1,7 @@
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Hosting;
+
 namespace Plugin.Maui.OCR;
 
 /// <summary>

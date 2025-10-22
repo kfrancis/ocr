@@ -1,6 +1,8 @@
-﻿using Foundation;
+using Foundation;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
 
-namespace Plugin.Maui.Feature.Sample;
+namespace OcrSample;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

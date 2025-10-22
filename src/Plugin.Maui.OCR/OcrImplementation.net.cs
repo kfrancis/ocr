@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Plugin.Maui.OCR;
 
 // This usually is a placeholder as .NET MAUI apps typically don't run on .NET generic targets unless through unit tests and such

@@ -3,7 +3,7 @@
     <Project Path="../src/Plugin.Maui.OCR/Plugin.Maui.OCR.csproj" />
   </Folder>
   <Folder Name="/sample/">
-    <Project Path="Plugin.Maui.Feature.Sample/Plugin.Maui.OCR.Sample.csproj">
+    <Project Path="Plugin.Maui.Feature.Sample/OcrSample.csproj">
       <Deploy />
     </Project>
   </Folder>
