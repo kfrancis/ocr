@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         project:
-          - src/Plugin.Xamarin.OCR/Plugin.Xamarin.OCR.csproj
+          #- src/Plugin.Xamarin.OCR/Plugin.Xamarin.OCR.csproj
           - src/Plugin.Maui.OCR/Plugin.Maui.OCR.csproj
   
     steps:
@@ -67,13 +67,13 @@ jobs:
         $version = minver --auto-increment minor --build-metadata build --verbosity trace
         echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
 
-    - name: Restore NuGet packages for Xamarin
-      if: contains(matrix.project, 'Plugin.Xamarin.OCR')
-      run: msbuild /t:Restore ${{ matrix.project }} -maxcpucount
+    # - name: Restore NuGet packages for Xamarin
+    #   if: contains(matrix.project, 'Plugin.Xamarin.OCR')
+    #   run: msbuild /t:Restore ${{ matrix.project }} -maxcpucount
 
-    - name: Build Xamarin
-      if: contains(matrix.project, 'Plugin.Xamarin.OCR')
-      run: msbuild /m /t:Build ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:GeneratePackageOnBuild=true /p:PackageVersion=${{ env.PACKAGE_VERSION }} /p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg /p:RestorePackages=false -maxcpucount
+    # - name: Build Xamarin
+    #   if: contains(matrix.project, 'Plugin.Xamarin.OCR')
+    #   run: msbuild /m /t:Build ${{ matrix.project }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:GeneratePackageOnBuild=true /p:PackageVersion=${{ env.PACKAGE_VERSION }} /p:OutputPath=${{ env.NuGetDirectory }} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg /p:RestorePackages=false -maxcpucount
 
     - name: Build MAUI
       if: contains(matrix.project, 'Plugin.Maui.OCR')
