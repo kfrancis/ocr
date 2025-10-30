@@ -79,7 +79,6 @@ class OcrImplementation : IOcrService
                 continue;
             }
 
-            ocrResult.AllText += " " + topCandidate.String;
             ocrResult.Lines.Add(topCandidate.String);
 
             if (!string.IsNullOrEmpty(topCandidate.String))
@@ -113,6 +112,15 @@ class OcrImplementation : IOcrService
                     Confidence = topCandidate.Confidence
                 }));
             }
+        }
+
+        if (ocrResult.Lines.Count > 0)
+        {
+            ocrResult.AllText = string.Join(" ", ocrResult.Lines);
+        }
+        else
+        {
+            ocrResult.AllText = null;
         }
 
         foreach (var match in options.PatternConfigs.Select(config => OcrPatternMatcher.ExtractPattern(ocrResult.AllText, config)).Where(match => !string.IsNullOrEmpty(match)))
